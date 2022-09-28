@@ -61,8 +61,9 @@ flame             latest    f849910cb3f7   16 hours ago   4.27GB
 ```
 
 
+### 6] Tag flame container image and upload it to docker registry.
 
-### 6] Tag flame container image and upload it to docker registry. Before doing this login to docker repository.
+Before doing this login to docker repository.
 
 ```
 sudo docker tag flame gaurav256/flame:p2p
