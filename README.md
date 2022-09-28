@@ -4,7 +4,6 @@
 Install Kubernetes on cloudlab using following repo https://github.com/gauravratnakar256/UNIVERSE/tree/next
 
 
-
 # Setup Flame on master node
 
 ### 1] Clone the repository
@@ -143,4 +142,17 @@ flame-notifier-8f8f5d855-9q6p2            1/1     Running   0             11h
 postgres-76d7b48888-qcdv9                 1/1     Running   0             11h
 ```
 
+# Setup flamectl on master node
+
+1] Execute build-config.sh
+ 
+```
+Run ./build-config.sh <flame api server url>:<nginxhttps port>
+```
+
+2] Add flamectl path to $PATH
+```
+export PATH="$HOME/.flame/bin:$PATH"
+source ~/.bashrc
+```
 
