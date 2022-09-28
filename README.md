@@ -7,7 +7,12 @@ Install Kubernetes on cloudlab using following repo https://github.com/gauravrat
 
 # Setup flame on master node
 
-### 1] Install prerequisite required for running flame #
+### 1] Clone the repository
+```
+git clone https://github.com/gauravratnakar256/flame.git
+```
+
+### 1] Install prerequisite required for running flame 
 
 ```
 Run ./100-flame-setup.sh
@@ -77,6 +82,7 @@ sudo docker push gaurav256/flame:p2p
 ```
 
 Check that all pods were created successfull `kubectl get pods -n flame`
+
 Example output:
 
 ```
