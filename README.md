@@ -1,10 +1,6 @@
 # Getting started with Flame on kubernetes 
 
-1] Install Kubernetes on cloudlab
-
-```
-Install Kubernetes on cloudlab using following repo https://github.com/gauravratnakar256/UNIVERSE/tree/next
-```
+1] Install Kubernetes on cloudlab using following repo https://github.com/gauravratnakar256/UNIVERSE/tree/next
 
 # Setup flame on master node
 
@@ -16,12 +12,14 @@ Run ./100-flame-setup.sh
 
 2] Add flame api server url to /etc/hosts 
 
+Example snippet:
 ```
-<master node ip address> apiserver.flame.test
+<master node ip address> flame-apiserver.flame.test
 ```
 
 3] Add all flame urls to coredns configmap so that pods can resolve them. Execute `kubectl edit configmap coredns -n kube-system` and add urls under loadbalance
 
+Example snippet:
 ```
 hosts {
 	 
