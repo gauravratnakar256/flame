@@ -81,6 +81,8 @@ NAME                       TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)     
 ingress-nginx-controller   NodePort   10.107.175.66   <none>        80:32685/TCP,443:31697/TCP   27d
 ```
 
+Update values in control/values.yaml
+
 ```
 vi helm-chart/control/values.yaml
 ```
@@ -104,6 +106,8 @@ imageTag: p2p
 workerImageName: gaurav256/flame
 workerImageTag: p2p
 ```
+
+Update values in deployer/values.yaml
 
 ```
 vi helm-chart/deployer/values.yaml
