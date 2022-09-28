@@ -149,6 +149,10 @@ postgres-76d7b48888-qcdv9                 1/1     Running   0             11h
 ```
 Run ./build-config.sh <flame api server url>:<nginxhttps port>
 ```
+Example snippet:
+```
+./build-config.sh flame-apiserver.flame.test:31697
+```
 
 2] Add flamectl path to $PATH
 ```
