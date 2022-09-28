@@ -73,6 +73,43 @@ sudo docker push gaurav256/flame:p2p
 
 ### 7] Update nginx ingress port and docker image details in values.yml
 
+Execute `kubectl get svc ingress-nginx-controller -n ingress-nginx` to get ingress port associated with 80 and 443
+
+Example snippet:
+```
+NAME                       TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx-controller   NodePort   10.107.175.66   <none>        80:32685/TCP,443:31697/TCP   27d
+```
+
+```
+vi helm-chart/control/values.yaml
+```
+Update nginxhttps port with port associated with 443 and nginxhttp with port associated with 80
+
+Example snippet:
+```
+endpointports:
+  http: 30205
+  https: 30371
+  nginxhttps: 31697
+  nginxhttp: 32685
+```
+
+Update imageName, imageTag, workerImageName and workerImageTag with docker image details created in step 6.
+
+Example snippet:
+```
+imageName: gaurav256/flame
+imageTag: p2p
+workerImageName: gaurav256/flame
+workerImageTag: p2p
+```
+
+```
+vi helm-chart/deployer/values.yaml
+```
+
+Update imageName, imageTag, nginxhttps and nginxhttp values same as control/values.yaml.
 
 
 ### 8] Start flame
