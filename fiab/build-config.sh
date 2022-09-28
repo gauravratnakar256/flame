@@ -16,7 +16,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Assumption: apiserver ingress doesn't have tls enabled. Hence, http is used in config.yaml below.
-apiserver_host=$(kubectl get ing -n flame  | grep flame-apiserver | awk '{print $3}')
+
+if [ $# -eq 0 ]
+  then
+    echo "No arguments supplied"
+fi
+
+apiserver_host=$1
 
 FLAME_DIR=$HOME/.flame
 
