@@ -12,14 +12,14 @@ Install Kubernetes on cloudlab using following repo https://github.com/gauravrat
 git clone https://github.com/gauravratnakar256/flame.git
 ```
 
-### 1] Install prerequisite required for running flame 
+### 2] Install prerequisite required for running flame 
 
 ```
 Run ./100-flame-setup.sh
 ```
 
 
-### 2] Add flame api server url to /etc/hosts 
+### 3] Add flame api server url to /etc/hosts 
 
 Example snippet:
 ```
@@ -27,7 +27,7 @@ Example snippet:
 ```
 
 
-### 3] Add all flame urls to coredns configmap so that pods can resolve them. 
+### 4] Add all flame urls to coredns configmap so that pods can resolve them. 
 
 Execute `kubectl edit configmap coredns -n kube-system` and add urls under loadbalance
 
@@ -46,7 +46,7 @@ hosts {
 
 
 
-### 4] Build flame container image
+### 5] Build flame container image
 
 ```
 cd fiab
@@ -62,7 +62,7 @@ flame             latest    f849910cb3f7   16 hours ago   4.27GB
 
 
 
-### 5] Tag flame container image and upload it to docker registry. Before doing this login to docker repository.
+### 6] Tag flame container image and upload it to docker registry. Before doing this login to docker repository.
 
 ```
 sudo docker tag flame gaurav256/flame:p2p
@@ -71,11 +71,11 @@ sudo docker push gaurav256/flame:p2p
 
 
 
-### 6] Update nginx ingress port and docker image details in values.yml
+### 7] Update nginx ingress port and docker image details in values.yml
 
 
 
-### 7] Start flame
+### 8] Start flame
 
 ```
 ./flame.sh start
