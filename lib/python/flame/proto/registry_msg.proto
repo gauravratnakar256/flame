@@ -1,0 +1,54 @@
+// Copyright 2022 Cisco Systems, Inc. and its affiliates
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package registry;
+
+message Record {
+  string job = 1;
+  string channel = 2;
+  string role = 3;
+}
+
+message UidEndpoints {
+  repeated string uid = 1;
+  repeated string endpoint = 2;
+}
+
+message Get {
+  uint32 req_seq = 1;
+  repeated Record record = 2;
+}
+
+message Set {
+  uint32 req_seq = 1;
+  string uid = 2;
+  string endpoint = 3;
+  repeated Record record = 4;
+}
+
+message Response {
+  Status status = 1;
+  enum Status {
+    OK = 0;
+    MALFORMED_MESSAGE = 1;
+    TIMEOUT = 2;
+    WRONG_TYPE = 3;
+  }
+  uint32 req_seq = 2;
+  map<string, registry.UidEndpoints> role_to_uidep = 3;
+}

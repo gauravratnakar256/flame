@@ -1,0 +1,277 @@
+# Copyright 2022 Cisco Systems, Inc. and its affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+########################################
+# Job specification
+########################################
+JobSpec:
+  description: Job specification
+  type: object
+  properties:
+    id:
+      type: string
+    userId:
+      type: string
+    designId:
+      type: string
+    schemaVersion:
+      type: string
+    codeVersion:
+      type: string
+    dataSpec:
+      $ref: '#/components/schemas/DataSpec'
+    optimizer:
+      $ref: '#/components/schemas/Optimizer'
+    selector:
+      $ref: '#/components/schemas/Selector'
+    priority:
+      $ref: '#/components/schemas/JobPriority'
+    backend:
+      $ref: '#/components/schemas/CommBackend'
+    maxRunTime:
+      type: integer
+      format: int32
+      default: 600 # 600s = 10min
+    baseModel:
+      $ref: '#/components/schemas/BaseModel'
+    hyperparameters:
+      type: object
+    dependencies:
+      type: array
+      items:
+        type: string
+  required:
+    - designId
+    - schemaVersion
+    - codeVersion
+  example:
+    userId: "john"
+    designId: "60d0d66716af12b787d9ef0a"
+    schemaVersion: "1"
+    codeVersion: "1"
+    selector:
+      sort: random
+      kwargs:
+        k: 10
+    prority: "low"
+    backend: "mqtt"
+    maxRunTime: 600
+    baseModel:
+        name: mnist-624d9fc43395791
+        version: 2
+    hyperparameters:
+      - rounds: 5
+      - runningRate: 0.01
+    dependencies:
+      - numpy >= 1.2.0
+
+JobPriority:
+  enum:
+    - low
+    - medium
+    - high
+
+CommBackend:
+  enum:
+    - mqtt
+    - p2p
+
+########################################
+# Base Model
+########################################
+BaseModel:
+  type: object
+  properties:
+    name:
+      type: string
+    version:
+      type: integer
+      format: int32
+  example:
+    name: mnist-624d9fc43395791
+    version: 2
+
+########################################
+# Data Spec
+########################################
+DataSpec:
+  type: object
+  properties:
+    fromUser:
+      # an object is a key-value pair of realm and count
+      type: object
+      additionalProperties:
+        type: integer
+        format: int32
+    fromSystem:
+      type: array
+      items:
+        type: string
+  example:
+    fromUser:
+      default: 1 # there is one user-fed dataset under default realm
+      uk: 2 # there are two user-fed datasets (hence two compute nodes) under uk realm
+      us/foo: 3 # there are three user-fed datasets under us/foo realm
+    fromSystem:
+      - 61609290fa724deafdb2a4fa # id of dataset registered in the flame system
+
+########################################
+# Optimizer
+########################################
+Optimizer:
+  type: object
+  properties:
+    sort:
+      type: string
+    kwargs:
+      type: object
+  example:
+    sort: fedyogi
+    kwargs:
+      beta_1: 0.9
+      beta_2: 0.99
+      eta: 0.01
+      tau: 0.001
+
+########################################
+# Selector
+########################################
+Selector:
+  type: object
+  properties:
+    sort:
+      type: string
+    kwargs:
+      type: object
+  example:
+    sort: random
+    kwargs:
+      k: 10
+
+########################################
+# Job status
+########################################
+JobStatus:
+  description: Job status
+  type: object
+  properties:
+    id:
+      type: string
+    state:
+      $ref: '#/components/schemas/JobState'
+    createdAt:
+      type: string
+      format: date-time
+    startedAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+    endedAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - state
+
+########################################
+# Job state
+########################################
+JobState:
+  enum:
+    - ready
+    - starting
+    - applying
+    - deploying
+    - stopping
+    - running
+    - failed
+    - terminated
+    - completed
+
+########################################
+# Task
+########################################
+Task:
+  description: job task that contains job config and code
+  type: object
+  properties:
+    config:
+      type: string
+      format: binary
+    code:
+      type: string
+      format: binary
+  required:
+    - config
+    - code
+
+########################################
+# Task Info
+########################################
+TaskInfo:
+  description: Task information
+  type: object
+  properties:
+    jobId:
+      type: string
+    taskId:
+      type: string
+    role:
+      type: string
+    type:
+      $ref: '#/components/schemas/TaskType'
+    key:
+      type: string
+    state:
+      $ref: '#/components/schemas/JobState' # reuse job state
+    computeId:
+      type: string
+    log:
+      type: string
+    timestamp:
+      type: string
+      format: date-time
+
+########################################
+# Task Type
+#
+# user: users bring compute resource and
+#       dataset
+# system: system allocates compute
+#         resource and configures
+#         dataset access
+########################################
+TaskType:
+  enum:
+    - user
+    - system
+
+########################################
+# Task Status
+########################################
+TaskStatus:
+  description: Task status
+  type: object
+  properties:
+    state:
+      $ref: '#/components/schemas/JobState' # reuse job state
+    log:
+      type: string
+    timestamp:
+      type: string
+      format: date-time

@@ -1,0 +1,129 @@
+# Copyright 2022 Cisco Systems, Inc. and its affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+mongodb:
+  architecture: replicaset
+  auth:
+    enabled: false
+
+  # Uncomment the following block after the 1st installation of flame helm chart.
+  # The block allows access to database outside the k8s cluster.
+  # Enable externalAccess config only for debugging purposes by using tools like Robo 3T.
+  #######
+  # externalAccess:
+  #   enabled: true
+  #   service:
+  #     type: LoadBalancer
+  #   autoDiscovery:
+  #     enabled: true
+  # rbac:
+  #   create: true
+  #######
+
+minio:
+  mode: standalone # other option: distributed
+  persistence:
+    enabled: false
+    size: 1Gi
+  buckets:
+    - name: mlruns
+      policy: none
+      purge: false
+  resources:
+    requests:
+      memory: 256Mi
+  rootUser: minio
+  rootPassword: minio123
+  users:
+    - accessKey: flame
+      secretKey: flame123
+      policy: readwrite
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      # In case there is 413 error,
+      # refer to https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#custom-max-body-size
+      # set nginx.ingress.kubernetes.io/proxy-body-size to 0 to disable the limit
+      nginx.ingress.kubernetes.io/proxy-body-size: 512m
+    hosts:
+      - minio.flame.test
+
+imageName: flame
+imageTag: latest
+workerImageName: flame
+workerImageTag: latest
+
+broker:
+  - sort: mqtt
+    host: flame-mosquitto
+  - sort: p2p
+    host: flame-metaserver:10104
+
+registry:
+  sort: mlflow
+  uri: http://mlflow.flame.test
+
+ingress:
+  ingressClassName: nginx
+  apiVersion: networking.k8s.io/v1
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: selfsigned
+  annotationsGrpc:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    cert-manager.io/cluster-issuer: selfsigned
+  # In mlflow, selfsigned certificate raises SSLCertVerificationError
+  # So, fiab env disable tls; tls can be enabled with a legitimate cert
+  annotationsMlflow:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # In case there is 413 error,
+    # refer to https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#custom-max-body-size
+    # set nginx.ingress.kubernetes.io/proxy-body-size to 0 to disable the limit
+    nginx.ingress.kubernetes.io/proxy-body-size: "512m"
+
+frontDoorUrl:
+  apiserver: apiserver.flame.test
+  notifier: notifier.flame.test
+  mlflow: mlflow.flame.test
+
+mlflow:
+  s3EndpointUrl: http://minio.flame.test
+  servicePort: "5000"
+
+deployerDefault:
+  adminId: "admin-1"
+  region: "default/us"
+  computeId: "default"
+  apiKey: "apiKey-default"
+  platform: "k8s"
+  namespace: "flame"
+
+servicePort:
+  apiserver: "10100"
+  notifier: "10101"
+  controller: "10102"
+  agent: "10103"
+  metaserver: "10104"
+  mqtt: "1883"
+
+replicas: 1
+
+# enable this in case a selfsigned cert is in use (for test only)
+# this holds true in fiab setting
+insecure: true

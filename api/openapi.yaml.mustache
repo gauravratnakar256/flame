@@ -1,0 +1,31 @@
+openapi: 3.0.0
+info:
+  license:
+    name: MIT
+  title: Flame REST API
+  version: 1.0.0
+servers:
+  - url: /
+paths:
+  {{> design_api.partials }}
+
+  {{> dataset_api.partials }}
+
+  {{> job_api.partials }}
+
+  {{> computes_api.partials }}
+  
+components:
+  schemas:
+    {{> design_components.partials }}
+
+    {{> dataset_components.partials }}
+
+    {{> job_components.partials }}
+
+    {{> etc_components.partials }}
+
+    {{> computes_components.partials }}
+    
+  securitySchemes:
+    {{> computes_securityschemes.partials }}

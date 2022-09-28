@@ -1,0 +1,499 @@
+# Copyright 2022 Cisco Systems, Inc. and its affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+/users/{user}/jobs:
+  ########################################
+  # Create new job
+  ########################################
+  post:
+    operationId: createJob
+    summary: Create a new job specification
+    tags:
+      - jobs
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobSpec'
+    responses:
+      "201":
+        description: Null response
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+  ########################################
+  # Get status of jobs
+  ########################################
+  get:
+    operationId: getJobs
+    summary: Get status info on all the jobs owned by user
+    tags:
+      - jobs
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: limit
+        description: How many items to return at one time (max 100)
+        in: query
+        schema:
+          format: int32
+          type: integer
+        style: form
+        explode: true
+        required: false
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/JobStatus'
+        description: A paged array of status on jobs
+        headers:
+          x-next:
+            description: A link to the next page of responses
+            explode: false
+            schema:
+              type: string
+            style: simple
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+/users/{user}/jobs/{jobId}:
+  ########################################
+  # Get job specification given an ID
+  ########################################
+  get:
+    operationId: getJob
+    summary: Get a job specification
+    tags:
+      - jobs
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: jobId
+        description: job id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobSpec'
+        description: Information about submitted job
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+  ########################################
+  # Update job specification
+  ########################################
+  put:
+    operationId: updateJob
+    summary: Update a job specification
+    tags:
+      - jobs
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: jobId
+        description: job id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobSpec'
+    responses:
+      '200':
+        description: Updated
+      '401':
+        description: Unauthorized
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+  ########################################
+  # Delete Job
+  ########################################
+  delete:
+    operationId: deleteJob
+    summary: Delete job specification
+    tags:
+      - jobs
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: jobId
+        description: job id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    responses:
+      '200':
+        description: Deleted
+      '404':
+        description: Job id not found
+      '401':
+        description: Unauthorized
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+/users/{user}/jobs/{jobId}/status:
+  ########################################
+  # Get job status
+  ########################################
+  get:
+    operationId: getJobStatus
+    summary: Get job status of a given jobId
+    tags:
+      - jobs
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: jobId
+        description: job id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobStatus'
+        description: Information about submitted job
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+  ########################################
+  # Update job status to start/stop/apply a job
+  ########################################
+  put:
+    operationId: updateJobStatus
+    summary: Update the status of a job
+    tags:
+      - jobs
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: jobId
+        description: job id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobStatus'
+    responses:
+      '200':
+        description: Updated status
+      '401':
+        description: Unauthorized
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+/users/{user}/jobs/{jobId}/tasks/{taskId}:
+  ########################################
+  # Get info of a task in a job
+  ########################################
+  get:
+    operationId: getTaskInfo
+    summary: Get the info of a task in a job
+    tags:
+      - jobs
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: jobId
+        description: job id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: taskId
+        description: task id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInfo'
+        description: details about task
+      "401":
+        description: Unauthorized
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+/users/{user}/jobs/{jobId}/tasks:
+  ########################################
+  # Get info of tasks in a job
+  ########################################
+  get:
+    operationId: getTasksInfo
+    summary: Get the info of tasks in a job
+    tags:
+      - jobs
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: jobId
+        description: job id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: limit
+        description: How many items to return at one time (max 100)
+        in: query
+        schema:
+          format: int32
+          type: integer
+        style: form
+        explode: true
+        required: false
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/TaskInfo'
+        description: A paged array of status on jobs
+        headers:
+          x-next:
+            description: A link to the next page of responses
+            explode: false
+            schema:
+              type: string
+            style: simple
+      '401':
+        description: Unauthorized
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+/jobs/{jobId}/{taskId}/task:
+  ########################################
+  # Get job task
+  ########################################
+  get:
+    operationId: getTask
+    summary: Get a job task for a given job and task
+    tags:
+      - jobs
+    parameters:
+      - name: jobId
+        description: job id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+      - name: taskId
+        description: flamelet task Id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+      - name: key
+        description: A key for task authentication; once the key is recognized by the flame system for the first time, it can't be changed.
+        in: query
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Task'
+        description: job task containing config and code
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+
+/jobs/{jobId}/{taskId}/task/status:
+  ########################################
+  # Update task status from flamelet agent
+  ########################################
+  put:
+    operationId: updateTaskStatus
+    summary: Update the status of a task
+    tags:
+      - jobs
+    parameters:
+      - name: jobId
+        description: job id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: taskId
+        description: task id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TaskStatus'
+    responses:
+      '200':
+        description: Updated status
+      '401':
+        description: Unauthorized
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error

@@ -1,0 +1,461 @@
+# Copyright 2022 Cisco Systems, Inc. and its affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+/users/{user}/designs:
+  #------------------------------------#
+  # Get Template - get list of all designs
+  #------------------------------------#
+  get:
+    operationId: getDesigns
+    parameters:
+      - name: user
+        description: user id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: How many items to return at one time (max 100)
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: form
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/DesignInfo'
+        description: A paged array of designs
+        headers:
+          x-next:
+            description: A link to the next page of responses
+            explode: false
+            schema:
+              type: string
+            style: simple
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Get list of all the designs created by the user.
+    tags:
+      - designs
+
+  #------------------------------------#
+  # Create New Design Template
+  #------------------------------------#
+  post:
+    operationId: createDesign
+    parameters:
+      - description: user name
+        explode: false
+        in: path
+        name: user
+        required: true
+        schema:
+          type: string
+        style: simple
+    requestBody:
+      description: Collection of node information
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DesignInfo'
+    responses:
+      "201":
+        description: Null response
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Create a new design template.
+    tags:
+      - designs
+
+/users/{user}/designs/{designId}:
+  #------------------------------------#
+  # Get Design via ID
+  #------------------------------------#
+  get:
+    operationId: getDesign
+    parameters:
+      - name: user
+        description: user id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+      - name: designId
+        description: design id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Design'
+
+        description: A paged array of designs
+        headers:
+          x-next:
+            description: A link to the next page of responses
+            explode: false
+            schema:
+              type: string
+            style: simple
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Get design template information
+    tags:
+      - designs
+
+/users/{user}/designs/{designId}/schemas:
+  #------------------------------------#
+  # Get All Design Schemas
+  #------------------------------------#
+  get:
+    operationId: getDesignSchemas
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: designId
+        description: design id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesignSchemas'
+        description: a design schema
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Get all design schemas in a design
+    tags:
+      - designSchemas
+
+  #------------------------------------#
+  # Create Design Schema
+  #------------------------------------#
+  post:
+    operationId: createDesignSchema
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: designId
+        description: design id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DesignSchema'
+    responses:
+      "201":
+        description: Null response
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Update a design schema
+    tags:
+      - designSchemas
+
+/users/{user}/designs/{designId}/schemas/{version}:
+  #------------------------------------#
+  # Get Design Schema
+  #------------------------------------#
+  get:
+    operationId: getDesignSchema
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: designId
+        description: design id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: version
+        description: version string
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesignSchema'
+        description: a design schema
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Get a design schema owned by user
+    tags:
+      - designSchemas
+
+  #------------------------------------#
+  # Update Design Schema
+  #------------------------------------#
+  put:
+    operationId: updateDesignSchema
+    parameters:
+      - name: user
+        description: user id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: designId
+        description: design id
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+      - name: version
+        description: version string
+        in: path
+        schema:
+          type: string
+        style: simple
+        explode: false
+        required: true
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DesignSchema'
+    responses:
+      "200":
+        description: Null response
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Update a schema for a given design
+    tags:
+      - designSchemas
+
+/users/{user}/designs/{designId}/codes:
+  #------------------------------------#
+  # Upload Code Zip
+  #------------------------------------#
+  post:
+    operationId: createDesignCode
+    parameters:
+      - name: user
+        description: user id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+      - name: designId
+        description: design id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/File'
+    responses:
+      "201":
+        description: Null response
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Upload a new design code
+    tags:
+      - designCodes
+
+/users/{user}/designs/{designId}/codes/{version}:
+  #------------------------------------#
+  # Get Code Zip
+  #------------------------------------#
+  get:
+    operationId: getDesignCode
+    parameters:
+      - name: user
+        description: user name
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+      - name: designId
+        description: design id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+      - name: version
+        description: version string
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+    responses:
+      "200":
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+        description: A design code file in zipped format
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Get a zipped design code file owned by user
+    tags:
+      - designCodes
+
+  #------------------------------------#
+  # Update Code Zip For Particular Version
+  #------------------------------------#
+  put:
+    operationId: updateDesignCode
+    parameters:
+      - name: user
+        description: user id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+      - name: designId
+        description: design id
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+      - name: version
+        description: version string
+        explode: false
+        in: path
+        required: true
+        schema:
+          type: string
+        style: simple
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/File'
+    responses:
+      "200":
+        description: Null response
+      default:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+        description: unexpected error
+    summary: Update a design code
+    tags:
+      - designCodes
