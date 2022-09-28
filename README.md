@@ -22,7 +22,9 @@ Example snippet:
 ```
 
 
-### 3] Add all flame urls to coredns configmap so that pods can resolve them. Execute `kubectl edit configmap coredns -n kube-system` and add urls under loadbalance
+### 3] Add all flame urls to coredns configmap so that pods can resolve them. 
+
+Execute `kubectl edit configmap coredns -n kube-system` and add urls under loadbalance
 
 Example snippet:
 ```
