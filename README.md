@@ -49,7 +49,6 @@ hosts {
 ### 5] Build flame container image
 
 ```
-cd fiab
 sudo ./build-image.sh
 ```
 
