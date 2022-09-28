@@ -1,11 +1,11 @@
-# Getting started with Flame on kubernetes 
+# Getting started with Flame on Kubernetes 
 
 
 Install Kubernetes on cloudlab using following repo https://github.com/gauravratnakar256/UNIVERSE/tree/next
 
 
 
-# Setup flame on master node
+# Setup Flame on master node
 
 ### 1] Clone the repository
 ```
