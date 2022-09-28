@@ -24,10 +24,10 @@ data:
   controller.yaml: |
     ---
     db: mongodb://flame-mongodb-headless:27017/?replicaSet=rs0
-    notifier: {{ .Values.frontDoorUrl.notifier }}:443
+    notifier: {{ .Values.frontDoorUrl.notifier }}:{{ .Values.endpointports.nginxhttps }}
     jobParams:
       image: {{ .Values.workerImageName }}:{{ .Values.workerImageTag }}
       brokers: {{ toYaml .Values.broker | nindent 8 }}
       registry:
         sort: {{ .Values.registry.sort }}
-        uri: {{ .Values.registry.uri }}
+        uri: {{ .Values.registry.uri }}:{{ .Values.endpointports.nginxhttp }}

@@ -21,15 +21,15 @@ minio:
       secretKey: flame123
       policy: readwrite
 
-imageName: flame
-imageTag: latest
+imageName: gaurav256/flame
+imageTag: p2p
 
 frontDoorUrl:
-  apiserver: apiserver.flame.test      # apiserver url needs to be updated
-  notifier: notifier.flame.test        # notifier url needs to be updated
+  apiserver: flame-apiserver.flame.test      # apiserver url needs to be updated
+  notifier: flame-notifier.flame.test       # notifier url needs to be updated
 
 mlflow:
-  s3EndpointUrl: http://minio.flame.test    # TODO: fix s3 access id and key issue
+  s3EndpointUrl: http://minio.flame.test:32685    # TODO: fix s3 access id and key issue
   servicePort: "5000"
 
 deployerCompute1:
@@ -44,6 +44,12 @@ servicePort:
   agent: "10103"
 
 replicas: 1
+
+endpointports:
+  http: 30205
+  https: 30371
+  nginxhttps: 31697
+  nginxhttp: 32685
 
 # enable this in case a selfsigned cert is in use (for test only)
 # this holds true in fiab setting

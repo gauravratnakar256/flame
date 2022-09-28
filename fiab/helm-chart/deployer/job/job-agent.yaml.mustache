@@ -23,21 +23,21 @@ spec:
             {{ end }}
           command: ["/usr/bin/flamelet"]
           image: <% imageLoc %>
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: {{ .Release.Namespace }}-agent-<% taskId %>
 
           ports:
             - containerPort: {{ .Values.servicePort.agent }}
 
           resources:
-            limits:
-              memory: 2Gi
+            #limits:
+              #memory: 2Gi
             requests:
               memory: 500Mi
 
           env:
             - name: LOG_LEVEL
-              value: INFO
+              value: DEBUG
             - name: FLAME_TASK_ID
               value: <% taskId %>
             - name: FLAME_TASK_KEY

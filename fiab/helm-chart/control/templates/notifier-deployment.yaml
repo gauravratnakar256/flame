@@ -35,7 +35,7 @@ spec:
         - args: []
           command: ["/usr/bin/notifier"]
           image: {{ .Values.imageName }}:{{ .Values.imageTag }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: {{ .Release.Name }}-notifier
           ports:
             - containerPort: {{ .Values.servicePort.notifier }}

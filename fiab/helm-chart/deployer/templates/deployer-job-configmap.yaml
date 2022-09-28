@@ -35,8 +35,8 @@ data:
       agent: {{ .Values.servicePort.agent }}
 
     endpoint:
-      apiserver: https://{{ .Values.frontDoorUrl.apiserver }}:443
-      notifier: {{ .Values.frontDoorUrl.notifier }}:443
+      apiserver: https://{{ .Values.frontDoorUrl.apiserver }}:{{ .Values.endpointports.nginxhttps }}
+      notifier: {{ .Values.frontDoorUrl.notifier }}:{{ .Values.endpointports.nginxhttps }}
 
     s3EndpointUrl: {{ .Values.mlflow.s3EndpointUrl }}
     accessKeyId: {{ (index .Values.minio.users 0).accessKey }}

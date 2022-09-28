@@ -19,6 +19,9 @@ mongodb:
   architecture: replicaset
   auth:
     enabled: false
+  persistence:
+    enabled: false
+    storageClass: nfs
 
   # Uncomment the following block after the 1st installation of flame helm chart.
   # The block allows access to database outside the k8s cluster.
@@ -55,18 +58,18 @@ minio:
   ingress:
     enabled: true
     ingressClassName: nginx
-    annotations:
-      # In case there is 413 error,
-      # refer to https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#custom-max-body-size
-      # set nginx.ingress.kubernetes.io/proxy-body-size to 0 to disable the limit
+    annotations: 
+      nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
       nginx.ingress.kubernetes.io/proxy-body-size: 512m
     hosts:
       - minio.flame.test
 
-imageName: flame
-imageTag: latest
-workerImageName: flame
-workerImageTag: latest
+imageName: gaurav256/flame
+imageTag: p2p
+workerImageName: gaurav256/flame
+workerImageTag: p2p
 
 broker:
   - sort: mqtt
@@ -76,7 +79,7 @@ broker:
 
 registry:
   sort: mlflow
-  uri: http://mlflow.flame.test
+  uri: http://flame-mlflow.flame.test
 
 ingress:
   ingressClassName: nginx
@@ -84,26 +87,32 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: selfsigned
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
   annotationsGrpc:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
     cert-manager.io/cluster-issuer: selfsigned
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
   # In mlflow, selfsigned certificate raises SSLCertVerificationError
   # So, fiab env disable tls; tls can be enabled with a legitimate cert
   annotationsMlflow:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    # In case there is 413 error,
-    # refer to https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#custom-max-body-size
-    # set nginx.ingress.kubernetes.io/proxy-body-size to 0 to disable the limit
     nginx.ingress.kubernetes.io/proxy-body-size: "512m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
 
 frontDoorUrl:
-  apiserver: apiserver.flame.test
-  notifier: notifier.flame.test
-  mlflow: mlflow.flame.test
+  apiserver: flame-apiserver.flame.test
+  notifier: flame-notifier.flame.test
+  mlflow: flame-mlflow.flame.test
 
 mlflow:
-  s3EndpointUrl: http://minio.flame.test
+  s3EndpointUrl: http://minio.flame.test:32685
   servicePort: "5000"
 
 deployerDefault:
@@ -123,6 +132,12 @@ servicePort:
   mqtt: "1883"
 
 replicas: 1
+
+endpointports:
+  http: 30205
+  https: 30371
+  nginxhttps: 31697
+  nginxhttp: 32685
 
 # enable this in case a selfsigned cert is in use (for test only)
 # this holds true in fiab setting

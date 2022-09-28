@@ -34,7 +34,7 @@ spec:
       containers:
         - command: ["/usr/bin/metaserver"]
           image: {{ .Values.imageName }}:{{ .Values.imageTag }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: {{ .Release.Name }}-metaserver
           ports:
             - containerPort: {{ .Values.servicePort.metaserver }}

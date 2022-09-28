@@ -38,7 +38,7 @@ spec:
             {{ end }}
           command: ["/usr/bin/controller"]
           image: {{ .Values.imageName }}:{{ .Values.imageTag }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: {{ .Release.Name }}-controller
           ports:
             - containerPort: {{ .Values.servicePort.controller }}

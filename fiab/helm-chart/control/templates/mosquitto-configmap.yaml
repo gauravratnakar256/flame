@@ -24,3 +24,5 @@ data:
   mosquitto.conf: |
     allow_anonymous true
     listener 1883
+    log_dest file /mosquitto/log/mosquitto.log
+    max_queued_messages 0

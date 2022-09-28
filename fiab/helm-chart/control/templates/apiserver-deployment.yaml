@@ -37,7 +37,7 @@ spec:
             - "http://{{ .Release.Name }}-controller:{{ .Values.servicePort.controller }}"
           command: ["/usr/bin/apiserver"]
           image: {{ .Values.imageName }}:{{ .Values.imageTag }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: {{ .Release.Name }}-apiserver
           ports:
             - containerPort: {{ .Values.servicePort.apiserver }}

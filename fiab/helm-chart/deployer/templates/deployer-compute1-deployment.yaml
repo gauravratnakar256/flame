@@ -33,9 +33,9 @@ spec:
       containers:
         - args:
           - --apiserver
-          - "https://{{ .Values.frontDoorUrl.apiserver }}:443"
+          - "https://{{ .Values.frontDoorUrl.apiserver }}:{{ .Values.endpointports.nginxhttps }}"
           - --notifier
-          - "{{ .Values.frontDoorUrl.notifier }}:443"
+          - "{{ .Values.frontDoorUrl.notifier }}:{{ .Values.endpointports.nginxhttps }}"
           - --adminid
           - {{ .Values.deployerCompute1.adminId }}
           - --region
@@ -53,7 +53,7 @@ spec:
           {{ end }}
           command: ["/usr/bin/deployer"]
           image: {{ .Values.imageName }}:{{ .Values.imageTag }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: {{ .Release.Name }}-deployer-compute1
           volumeMounts:
             - mountPath: /flame/template

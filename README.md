@@ -1,6 +1,9 @@
 # Getting started with Flame on kubernetes 
 
+
 Install Kubernetes on cloudlab using following repo https://github.com/gauravratnakar256/UNIVERSE/tree/next
+
+
 
 # Setup flame on master node
 
@@ -10,12 +13,14 @@ Install Kubernetes on cloudlab using following repo https://github.com/gauravrat
 Run ./100-flame-setup.sh
 ```
 
+
 2] Add flame api server url to /etc/hosts 
 
 Example snippet:
 ```
 <master node ip address> flame-apiserver.flame.test
 ```
+
 
 3] Add all flame urls to coredns configmap so that pods can resolve them. Execute `kubectl edit configmap coredns -n kube-system` and add urls under loadbalance
 
@@ -32,6 +37,8 @@ hosts {
  }
 ```
 
+
+
 4] Build flame container image
 
 ```
@@ -46,6 +53,8 @@ REPOSITORY        TAG       IMAGE ID       CREATED        SIZE
 flame             latest    f849910cb3f7   16 hours ago   4.27GB
 ```
 
+
+
 5] Tag flame container image and upload it to docker registry. Before doing this login to docker repository.
 
 ```
@@ -53,7 +62,11 @@ sudo docker tag flame gaurav256/flame:p2p
 sudo docker push gaurav256/flame:p2p
 ```
 
+
+
 6] Update nginx ingress port and docker image details in values.yml
+
+
 
 7] Start flame
 
