@@ -16,4 +16,4 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 ./setup-cert-manager.sh
 
 # install moreutils (sponge)
-sudo apt-get install moreutils
+sudo apt-get install -y moreutils 
