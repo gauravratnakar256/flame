@@ -14,7 +14,7 @@ git clone https://github.com/gauravratnakar256/flame.git
 ### 2] Install prerequisite required for running flame 
 
 ```
-Run ./scripts_spright/500-flame-setup.sh
+./scripts_spright/500-flame-setup.sh
 ```
 
 
