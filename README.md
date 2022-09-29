@@ -163,3 +163,28 @@ source ~/.bashrc
 # Run MedMNIST example
 
 To manually run medmnist job refer to instructions at [medmnist example](https://github.com/gauravratnakar256/flame/blob/main/examples/medmnist/README.md).
+
+To run medmnist job using script goto examples/medmnist
+```
+run ./502-run-medmnist.sh <code zip name> <number of trainers>
+```
+
+For full data code zip name is `medmnist` and for dummy data use `medmnist_dummy`
+After running the script you will get jobId note it down
+
+Example output:
+```
+New job created successfully
+        ID: 6335234925b853b07d3511df
+        state: ready
+```
+
+Use below command to start the job
+```
+flamectl start job <jobId>  --insecure
+```
+
+To check status of job
+```
+flamectl get jobs --insecure
+```
