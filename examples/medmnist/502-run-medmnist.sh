@@ -16,7 +16,7 @@ flamectl create schema schema.json --design medmnist --insecure
 flamectl create code $design.zip --design medmnist --insecure
 
 
-for i in $( eval echo {0..$numberOfTrainer} )
+for i in $( eval echo {1..$numberOfTrainer} )
 do
     flamectl create dataset dataset$i.json --insecure
 done
