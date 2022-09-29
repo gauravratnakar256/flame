@@ -43,7 +43,7 @@ hosts {
     }
 ```
 
-
+For complete core dns config map update [refer this]()
 
 ### 5] Build flame container image
 
