@@ -147,7 +147,7 @@ postgres-76d7b48888-qcdv9                 1/1     Running   0             11h
 ### 1] Execute build-config.sh
  
 ```
-Run ./build-config.sh <flame api server url>:<nginxhttps port>
+./build-config.sh <flame api server url>:<nginxhttps port>
 ```
 Example snippet:
 ```
@@ -166,11 +166,11 @@ To manually run medmnist job refer to instructions at [medmnist example](https:/
 
 To run medmnist job using script goto examples/medmnist
 ```
-run ./502-run-medmnist.sh <code zip name> <number of trainers>
+./502-run-medmnist.sh <code zip name> <number of trainers>
 ```
 
 For full data code zip name is `medmnist` and for dummy data use `medmnist_dummy`
-After running the script you will get jobId note it down
+After running the script you will get jobId use it for below commands
 
 Example output:
 ```
