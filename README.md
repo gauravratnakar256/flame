@@ -22,6 +22,7 @@ git clone https://github.com/gauravratnakar256/flame.git && cd flame/fiab
 
 Example snippet:
 ```
+sudo vi /etc/hosts
 <master node ip address> flame-apiserver.flame.test
 ```
 
@@ -33,14 +34,13 @@ Execute `kubectl edit configmap coredns -n kube-system` and add urls under loadb
 Example snippet:
 ```
 hosts {
-	 
-	 <master node ip address>  flame-apiserver.flame.test
-	 <master node ip address>  flame-notifier.flame.test
-	 <master node ip address>  flame-mlflow.flame.test
-	 <master node ip address>  flame-controller.flame.test
-	 <master node ip address>  minio.flame.test
-	 fallthrough
- }
+      <master node ip address>  flame-apiserver.flame.test
+      <master node ip address>  flame-notifier.flame.test
+      <master node ip address>  flame-mlflow.flame.test
+      <master node ip address>  flame-controller.flame.test
+      <master node ip address>  minio.flame.test
+      fallthrough
+    }
 ```
 
 
@@ -51,7 +51,7 @@ hosts {
 sudo ./build-image.sh
 ```
 
-To check the flame image built, run `docker images`. An output is similar to:
+To check the flame image built, run `sudo docker images`. An output is similar to:
 
 ```
 REPOSITORY        TAG       IMAGE ID       CREATED        SIZE
@@ -118,7 +118,7 @@ Update imageName, imageTag, nginxhttps and nginxhttp values same as control/valu
 ### 8] Start flame
 
 ```
-./flame.sh start
+sudo ./flame.sh start
 ```
 
 Check that all pods were created successfull `kubectl get pods -n flame`
@@ -154,18 +154,32 @@ Example snippet:
 ./build-config.sh flame-apiserver.flame.test:31697
 ```
 
-### 2] Add flamectl path to $PATH
+### 2] Install go or update to version 1.19.1
+```
+wget https://go.dev/dl/go1.19.1.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.19.1.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+```
+
+### 3] Compile flamectl package
+```
+cd .. 
+make install
+```
+
+### 4] Add flamectl path to $PATH
 ```
 export PATH="$HOME/.flame/bin:$PATH"
-source ~/.bashrc
 ```
 
 # Run MedMNIST example
 
 To manually run medmnist job refer to instructions at [medmnist example](https://github.com/gauravratnakar256/flame/blob/main/examples/medmnist/README.md).
 
-To run medmnist job using script goto examples/medmnist
+To run medmnist job using script  follow below command
+
 ```
+cd  examples/medmnist
 ./502-run-medmnist.sh <code zip name> <number of trainers>
 ```
 
