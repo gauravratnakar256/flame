@@ -144,7 +144,7 @@ postgres-76d7b48888-qcdv9                 1/1     Running   0             11h
 
 # Setup flamectl on master node
 
-1] Execute build-config.sh
+### 1] Execute build-config.sh
  
 ```
 Run ./build-config.sh <flame api server url>:<nginxhttps port>
@@ -154,7 +154,7 @@ Example snippet:
 ./build-config.sh flame-apiserver.flame.test:31697
 ```
 
-2] Add flamectl path to $PATH
+### 2] Add flamectl path to $PATH
 ```
 export PATH="$HOME/.flame/bin:$PATH"
 source ~/.bashrc
