@@ -160,3 +160,4 @@ export PATH="$HOME/.flame/bin:$PATH"
 source ~/.bashrc
 ```
 
+# Setup flamectl on master node

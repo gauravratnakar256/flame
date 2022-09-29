@@ -1,0 +1,8 @@
+{
+    "name": "MedMNIST dataset159",
+    "description": "Dataset Repo: https://github.com/MedMNIST/MedMNIST, NonIID generating algorithm from FedMA paper repo",
+    "url": "https://raw.githubusercontent.com/gauravratnakar256/flamedatasets/main/medmnistdatasets/datasets/site159.npz",
+    "dataFormat": "npz",
+    "realm": "default/us/org159",
+    "isPublic": true
+}
