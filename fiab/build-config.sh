@@ -20,6 +20,7 @@
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
+	exit 1
 fi
 
 apiserver_host=$1
