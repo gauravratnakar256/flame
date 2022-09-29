@@ -8,7 +8,7 @@ Install Kubernetes on cloudlab using following repo https://github.com/gauravrat
 
 ### 1] Clone the repository
 ```
-git clone https://github.com/gauravratnakar256/flame.git
+git clone https://github.com/gauravratnakar256/flame.git && cd flame
 ```
 
 ### 2] Install prerequisite required for running flame 
