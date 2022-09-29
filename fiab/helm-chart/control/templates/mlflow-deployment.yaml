@@ -41,7 +41,7 @@ spec:
             - containerPort: {{ .Values.mlflow.servicePort }}
           env:
             - name: MLFLOW_S3_ENDPOINT_URL
-              value: {{ .Values.mlflow.s3EndpointUrl }}
+              value: {{ .Values.mlflow.s3EndpointUrl }}:{{ .Values.endpointports.nginxhttp }} 
             - name: AWS_ACCESS_KEY_ID
               value: {{ (index .Values.minio.users 0).accessKey }}
             - name: AWS_SECRET_ACCESS_KEY

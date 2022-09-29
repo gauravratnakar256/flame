@@ -29,7 +29,7 @@ frontDoorUrl:
   notifier: flame-notifier.flame.test       # notifier url needs to be updated
 
 mlflow:
-  s3EndpointUrl: http://minio.flame.test:32685    # TODO: fix s3 access id and key issue
+  s3EndpointUrl: http://minio.flame.test    # TODO: fix s3 access id and key issue
   servicePort: "5000"
 
 deployerCompute1:

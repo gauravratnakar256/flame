@@ -112,7 +112,7 @@ frontDoorUrl:
   mlflow: flame-mlflow.flame.test
 
 mlflow:
-  s3EndpointUrl: http://minio.flame.test:32685
+  s3EndpointUrl: http://minio.flame.test
   servicePort: "5000"
 
 deployerDefault:
