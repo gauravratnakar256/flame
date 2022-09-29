@@ -161,3 +161,5 @@ source ~/.bashrc
 ```
 
 # Run MedMNIST example
+
+To manually run medmnist job refer to instructions at [medmnist example](https://github.com/gauravratnakar256/flame/blob/main/examples/medmnist/README.md).
