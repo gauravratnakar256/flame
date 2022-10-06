@@ -1,14 +1,19 @@
 {{=<% %>=}}
 ---
-apiVersion: batch/v1
-kind: Job
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: {{ .Release.Namespace }}-agent-<% taskId %>
   namespace: {{ .Release.Namespace }}
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Namespace }}-agent-<% taskId %>
   template:
-    # activeDeadlineSeconds: <% maxWaitTime %>
-    # ttlSecondsAfterFinished: 180 # supported from v1.21
+    metadata:
+      labels:
+        app: {{ .Release.Namespace }}-agent-<% taskId %>
     spec:
       imagePullSecrets:
         - name: ecr-pull-secret
