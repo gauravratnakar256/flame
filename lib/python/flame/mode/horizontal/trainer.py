@@ -158,7 +158,7 @@ class Trainer(Role, metaclass=ABCMeta):
             temp_dict = self.add_shm_refrence(end)
             self.shm_dict_list[end] = temp_dict
 
-        weights = self.get_weights_from_shared_memory(end)
+        weights = self.get_weights_from_shared_mem(end)
         
         # logger.info("The end id of aggregator is " + end)
 
