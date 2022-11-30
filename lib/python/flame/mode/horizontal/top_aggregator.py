@@ -104,12 +104,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         self.model_structure_created = False
 
-        if not self.model_structure_created:
-             self.createModelStructure()
-             print(self.model_structure.keys())
-             self.model_structure_created = True
-
-    def createStructure(self, parameters, layer_name):
+    def create_structure(self, parameters, layer_name):
         for name, param in parameters:
              numpy_array = torch.clone(param).detach().numpy()
              numpy_array_datatype = numpy_array.dtype
@@ -119,10 +114,10 @@ class TopAggregator(Role, metaclass=ABCMeta):
              self.shm_dict[parameter_name] = shm
              self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
 
-    def createModelStructure(self):
+    def create_model_structure(self):
         for layer_name, module in self.model.named_modules():
-            self.createStructure(module.named_parameters(recurse=False), layer_name)
-            self.createStructure(module.named_buffers(recurse=False), layer_name)
+            self.create_structure(module.named_parameters(recurse=False), layer_name)
+            self.create_structure(module.named_buffers(recurse=False), layer_name)
 
 
     def get(self, tag: str) -> None:
@@ -278,6 +273,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
             task_load_data = Tasklet(self.load_data)
 
+            task_create_model_structure = Tasklet(self.create_model_structure)
+
             task_put = Tasklet(self.put, TAG_DISTRIBUTE)
 
             task_get = Tasklet(self.get, TAG_AGGREGATE)
@@ -300,7 +297,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # create a loop object with loop exit condition function
         loop = Loop(loop_check_fn=lambda: self._work_done)
-        task_internal_init >> task_load_data >> task_init >> loop(
+        task_internal_init >> task_load_data >> task_init >> task_create_model_structure >>loop(
             task_put >> task_get >> task_train >> task_eval >> task_analysis >>
             task_save_metrics >> task_increment_round
         ) >> task_end_of_training >> task_save_params >> task_save_model
