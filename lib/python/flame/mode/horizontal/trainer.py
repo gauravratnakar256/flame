@@ -69,7 +69,7 @@ class Trainer(Role, metaclass=ABCMeta):
 
         self.shm_dict = {}
         self.model_structure = {}
-        self.taskid = self.config.taskid
+        self.task_id = self.config.task_id
 
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
@@ -83,7 +83,7 @@ class Trainer(Role, metaclass=ABCMeta):
              numpy_array_datatype = numpy_array.dtype
              mem_size = int(numpy_array.nbytes)
              parameter_name =  layer_name + "." + name
-             shared_mem_name = self.taskid + "." + layer_name + "." + name
+             shared_mem_name = self.task_id + "." + layer_name + "." + name
              shm = shared_memory.SharedMemory(name=shared_mem_name, create=True, size=mem_size)
              self.shm_dict[parameter_name] = shm
              self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
@@ -102,7 +102,7 @@ class Trainer(Role, metaclass=ABCMeta):
         for name, param in parameters:
             numpy_array = torch.clone(param).detach().numpy()
             parameter_name = layer_name + "." + name
-            shared_mem_name = self.taskid + "." + layer_name + "." + name
+            shared_mem_name = self.task_id + "." + layer_name + "." + name
             dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
                             buffer=self.shm_dict[shared_mem_name].buf)
             np.copyto(dst, numpy_array)
