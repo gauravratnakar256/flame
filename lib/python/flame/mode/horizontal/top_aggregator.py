@@ -180,14 +180,13 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # this call waits for at least one peer to join this channel
         channel.await_join()
 
+        # before distributing weights, update it from global model
+        self._update_weights()
+
         if not self.model_structure_created:
              self.createModelStructure()
              print(self.model_structure.keys())
              self.model_structure_created = True
-
-
-        # before distributing weights, update it from global model
-        self._update_weights()
 
         # send out global model parameters to trainers
         for end in channel.ends():
