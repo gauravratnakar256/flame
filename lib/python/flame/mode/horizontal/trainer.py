@@ -94,7 +94,7 @@ class Trainer(Role, metaclass=ABCMeta):
     def load_parameters(self, parameters, layer_name):
         for name, param in parameters:
             numpy_array = torch.clone(param).detach().numpy()
-            parameter_name = "aggregator" + "." + layer_name + "." + name
+            parameter_name = "trainer" + "." + layer_name + "." + name
             dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
                             buffer=self.shm_dict[parameter_name].buf)
             np.copyto(dst, numpy_array)
