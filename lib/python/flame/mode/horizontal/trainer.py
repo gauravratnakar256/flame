@@ -20,6 +20,7 @@ import time
 import torch
 import numpy as np
 from multiprocessing.managers import SharedMemoryManager
+from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import shared_memory
 
 from ...channel_manager import ChannelManager
@@ -121,6 +122,23 @@ class Trainer(Role, metaclass=ABCMeta):
                                     buffer=self.temp_Dict[key].buf)
             self.model_dict[key] = torch.from_numpy(numpy_array)
 
+    def add_shm_refrence(self, end):
+        temp_dict = {}
+        for key in self.model_structure.keys():
+            shared_mem_name = end + "." + key
+            shm = SharedMemory(name=shared_mem_name)
+            temp_dict[key] = shm 
+        return temp_dict
+
+    def get_weights_from_shared_mem(self, end):
+        weights_dict = {}
+        for key in self.model_structure.keys():
+            numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
+                                    buffer=self.shm_dict_list[end][key].buf)
+            weights_dict[key] = torch.from_numpy(numpy_array)
+        return weights_dict
+
+
     def _fetch_weights(self, tag: str) -> None:
         logger.debug("calling _fetch_weights")
         channel = self.cm.get_by_tag(tag)
@@ -135,13 +153,17 @@ class Trainer(Role, metaclass=ABCMeta):
         end = channel.one_end()
         msg = channel.recv(end)
 
-        # if not end in self.shm_dict_list:
+        if not end in self.shm_dict_list:
+            temp_dict = self.add_shm_refrence(end)
+            self.shm_dict_list[end] = temp_dict
 
-
+        weights = self.get_weights_from_shared_memory(end)
+        
         # logger.info("The end id of aggregator is " + end)
 
         if MessageType.WEIGHTS in msg:
             self.weights = msg[MessageType.WEIGHTS]
+            logger.info("Weight type is " + type(self.weights))
             self._update_model()
 
         if MessageType.EOT in msg:
