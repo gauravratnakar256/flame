@@ -102,8 +102,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 "supported ml framework not found; "
                 f"supported frameworks are: {valid_frameworks}")
 
-        self.createModelStructure()
-        print(self.model_structure.keys())
+        self.model_structure_created = False
 
     def createStructure(self, parameters, layer_name):
         for name, param in parameters:
@@ -178,10 +177,14 @@ class TopAggregator(Role, metaclass=ABCMeta):
             logger.debug(f"channel not found for tag {tag}")
             return
 
-        logger.info("Inside _distribute_weights function")
-
         # this call waits for at least one peer to join this channel
         channel.await_join()
+
+        if not self.model_structure_created:
+             self.createModelStructure()
+             print(self.model_structure.keys())
+             self.model_structure_created = True
+
 
         # before distributing weights, update it from global model
         self._update_weights()
