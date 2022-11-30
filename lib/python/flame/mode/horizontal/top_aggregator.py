@@ -112,7 +112,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
              parameter_name =  layer_name + "." + name
              shared_mem_name = self.task_id + "." + layer_name + "." + name
              shm = shared_memory.SharedMemory(name=shared_mem_name, create=True, size=mem_size)
-             self.shm_dict[parameter_name] = shm
+             self.shm_dict[shared_mem_name] = shm
              self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
 
     def create_model_structure(self):
