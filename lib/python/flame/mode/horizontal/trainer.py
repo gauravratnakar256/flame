@@ -121,6 +121,8 @@ class Trainer(Role, metaclass=ABCMeta):
         end = channel.one_end()
         msg = channel.recv(end)
 
+        logger.info("The end id of aggregator is " + end)
+
         if MessageType.WEIGHTS in msg:
             self.weights = msg[MessageType.WEIGHTS]
             self._update_model()
