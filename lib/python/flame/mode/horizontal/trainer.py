@@ -17,6 +17,10 @@
 
 import logging
 import time
+import torch
+import numpy as np
+from multiprocessing.managers import SharedMemoryManager
+from multiprocessing import shared_memory
 
 from ...channel_manager import ChannelManager
 from ...common.custom_abcmeta import ABCMeta, abstract_attribute
@@ -66,6 +70,34 @@ class Trainer(Role, metaclass=ABCMeta):
             raise NotImplementedError(
                 "supported ml framework not found; "
                 f"supported frameworks are: {valid_frameworks}")
+
+    def create_structure(self, parameters, layer_name):
+        for name, param in parameters:
+             numpy_array = torch.clone(param).detach().numpy()
+             numpy_array_datatype = numpy_array.dtype
+             mem_size = int(numpy_array.nbytes)
+             parameter_name = "aggregator" + "." + layer_name + "." + name
+             shm = shared_memory.SharedMemory(name=parameter_name, create=True, size=mem_size)
+             self.shm_dict[parameter_name] = shm
+             self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
+
+    def create_model_structure(self):
+        for layer_name, module in self.model.named_modules():
+            self.create_structure(module.named_parameters(recurse=False), layer_name)
+            self.create_structure(module.named_buffers(recurse=False), layer_name)
+
+    def load_parameters_to_shared_memory(self):
+        for layer_name, module in self.model.named_modules():
+            self.load_parameters(module.named_parameters(recurse=False), layer_name)
+            self.load_parameters(module.named_buffers(recurse=False), layer_name)
+
+    def load_parameters(self, parameters, layer_name):
+        for name, param in parameters:
+            numpy_array = torch.clone(param).detach().numpy()
+            parameter_name = "aggregator" + "." + layer_name + "." + name
+            dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
+                            buffer=self.shm_dict[parameter_name].buf)
+            np.copyto(dst, numpy_array)
 
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
@@ -158,6 +190,8 @@ class Trainer(Role, metaclass=ABCMeta):
 
             task_init = Tasklet(self.initialize)
 
+            task_create_model_structure = Tasklet(self.create_model_structure)
+
             task_get = Tasklet(self.get, TAG_FETCH)
 
             task_train = Tasklet(self.train)
@@ -170,7 +204,7 @@ class Trainer(Role, metaclass=ABCMeta):
 
             # create a loop object with loop exit condition function
             loop = Loop(loop_check_fn=lambda: self._work_done)
-            task_internal_init >> task_load_data >> task_init >> loop(
+            task_internal_init >> task_load_data >> task_init >> task_create_model_structure >> loop(
                 task_get >> task_train >> task_eval >> task_put >>
                 task_save_metrics)
 
