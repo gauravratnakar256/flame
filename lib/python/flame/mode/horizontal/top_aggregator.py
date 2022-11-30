@@ -153,6 +153,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
             logger.debug(f"channel not found for tag {tag}")
             return
 
+        logger.info("Inside _distribute_weights function")
+
         # this call waits for at least one peer to join this channel
         channel.await_join()
 
