@@ -76,7 +76,7 @@ class Trainer(Role, metaclass=ABCMeta):
              numpy_array = torch.clone(param).detach().numpy()
              numpy_array_datatype = numpy_array.dtype
              mem_size = int(numpy_array.nbytes)
-             parameter_name = "aggregator" + "." + layer_name + "." + name
+             parameter_name = "trainer" + "." + layer_name + "." + name
              shm = shared_memory.SharedMemory(name=parameter_name, create=True, size=mem_size)
              self.shm_dict[parameter_name] = shm
              self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
