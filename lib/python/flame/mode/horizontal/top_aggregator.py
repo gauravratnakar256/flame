@@ -104,6 +104,11 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         self.model_structure_created = False
 
+        if not self.model_structure_created:
+             self.createModelStructure()
+             print(self.model_structure.keys())
+             self.model_structure_created = True
+
     def createStructure(self, parameters, layer_name):
         for name, param in parameters:
              numpy_array = torch.clone(param).detach().numpy()
@@ -182,11 +187,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # before distributing weights, update it from global model
         self._update_weights()
-
-        if not self.model_structure_created:
-             self.createModelStructure()
-             print(self.model_structure.keys())
-             self.model_structure_created = True
 
         # send out global model parameters to trainers
         for end in channel.ends():
