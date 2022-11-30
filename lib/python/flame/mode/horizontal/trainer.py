@@ -165,7 +165,7 @@ class Trainer(Role, metaclass=ABCMeta):
         if MessageType.WEIGHTS in msg:
             self.weights = msg[MessageType.WEIGHTS]
             # logger.info("Weight type is ".format(type(self.weights)))
-            print(type(MessageType.WEIGHTS))
+            print(type(msg[MessageType.WEIGHTS]))
             self._update_model()
 
         if MessageType.EOT in msg:
