@@ -17,6 +17,7 @@
 
 import logging
 import time
+import torch
 
 from diskcache import Cache
 from multiprocessing.managers import SharedMemoryManager
@@ -69,6 +70,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.cm(self.config)
         self.cm.join_all()
 
+        self.shm_dict = {}
+        self.model_structure = {}
+
         self.registry_client = registry_provider.get(self.config.registry.sort)
         # initialize registry client
         self.registry_client(self.config.registry.uri, self.config.job.job_id)
@@ -97,6 +101,25 @@ class TopAggregator(Role, metaclass=ABCMeta):
             raise NotImplementedError(
                 "supported ml framework not found; "
                 f"supported frameworks are: {valid_frameworks}")
+
+        self.createModelStructure()
+        print(self.model_structure.keys())
+
+    def createStructure(self, parameters, layer_name):
+        for name, param in parameters:
+             numpy_array = torch.clone(param).detach().numpy()
+             numpy_array_datatype = numpy_array.dtype
+             mem_size = int(numpy_array.nbytes)
+             parameter_name = "aggregator" + "." + layer_name + "." + name
+             shm = shared_memory.SharedMemory(name=parameter_name, create=True, size=mem_size)
+             self.shm_dict[parameter_name] = shm
+             self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
+
+    def createModelStructure(self):
+        for layer_name, module in self.model.named_modules():
+            self.createStructure(module.named_parameters(recurse=False), layer_name)
+            self.createStructure(module.named_buffers(recurse=False), layer_name)
+
 
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
