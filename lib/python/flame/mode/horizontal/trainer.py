@@ -65,8 +65,11 @@ class Trainer(Role, metaclass=ABCMeta):
         self._round = 1
         self._work_done = False
 
+        self.shm_dict_list = {}
+
         self.shm_dict = {}
         self.model_structure = {}
+        self.taskid = self.config.taskid
 
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
@@ -79,8 +82,9 @@ class Trainer(Role, metaclass=ABCMeta):
              numpy_array = torch.clone(param).detach().numpy()
              numpy_array_datatype = numpy_array.dtype
              mem_size = int(numpy_array.nbytes)
-             parameter_name = "trainer" + "." + layer_name + "." + name
-             shm = shared_memory.SharedMemory(name=parameter_name, create=True, size=mem_size)
+             parameter_name =  layer_name + "." + name
+             shared_mem_name = self.taskid + "." + layer_name + "." + name
+             shm = shared_memory.SharedMemory(name=shared_mem_name, create=True, size=mem_size)
              self.shm_dict[parameter_name] = shm
              self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
 
@@ -97,15 +101,25 @@ class Trainer(Role, metaclass=ABCMeta):
     def load_parameters(self, parameters, layer_name):
         for name, param in parameters:
             numpy_array = torch.clone(param).detach().numpy()
-            parameter_name = "trainer" + "." + layer_name + "." + name
+            parameter_name = layer_name + "." + name
+            shared_mem_name = self.taskid + "." + layer_name + "." + name
             dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
-                            buffer=self.shm_dict[parameter_name].buf)
+                            buffer=self.shm_dict[shared_mem_name].buf)
             np.copyto(dst, numpy_array)
+
 
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
         if tag == TAG_FETCH:
             self._fetch_weights(tag)
+
+    def get_weights_from_shared_memory(self, temp_dict):
+        model_dict = {}
+        for key in temp_dict:
+            parameter_name = "trainer" + "." + key
+            numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
+                                    buffer=self.temp_Dict[key].buf)
+            self.model_dict[key] = torch.from_numpy(numpy_array)
 
     def _fetch_weights(self, tag: str) -> None:
         logger.debug("calling _fetch_weights")
@@ -121,7 +135,10 @@ class Trainer(Role, metaclass=ABCMeta):
         end = channel.one_end()
         msg = channel.recv(end)
 
-        logger.info("The end id of aggregator is " + end)
+        # if not end in self.shm_dict_list:
+
+
+        # logger.info("The end id of aggregator is " + end)
 
         if MessageType.WEIGHTS in msg:
             self.weights = msg[MessageType.WEIGHTS]
