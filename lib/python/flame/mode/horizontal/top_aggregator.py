@@ -19,6 +19,8 @@ import logging
 import time
 
 from diskcache import Cache
+from multiprocessing.managers import SharedMemoryManager
+from multiprocessing import shared_memory
 
 from ...channel_manager import ChannelManager
 from ...common.custom_abcmeta import ABCMeta, abstract_attribute
