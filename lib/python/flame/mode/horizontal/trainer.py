@@ -133,6 +133,7 @@ class Trainer(Role, metaclass=ABCMeta):
     def get_weights_from_shared_mem(self, end):
         weights_dict = {}
         for key in self.model_structure.keys():
+            logger.info("Key is {}".format(key))
             numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
                                     buffer=self.shm_dict_list[end][key].buf)
             weights_dict[key] = torch.from_numpy(numpy_array)
