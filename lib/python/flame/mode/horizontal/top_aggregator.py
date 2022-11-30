@@ -18,6 +18,7 @@
 import logging
 import time
 import torch
+import numpy as np
 
 from diskcache import Cache
 from multiprocessing.managers import SharedMemoryManager
@@ -102,8 +103,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 "supported ml framework not found; "
                 f"supported frameworks are: {valid_frameworks}")
 
-        self.model_structure_created = False
-
     def create_structure(self, parameters, layer_name):
         for name, param in parameters:
              numpy_array = torch.clone(param).detach().numpy()
@@ -118,6 +117,19 @@ class TopAggregator(Role, metaclass=ABCMeta):
         for layer_name, module in self.model.named_modules():
             self.create_structure(module.named_parameters(recurse=False), layer_name)
             self.create_structure(module.named_buffers(recurse=False), layer_name)
+
+    def load_parameters_to_shared_memory(self):
+        for layer_name, module in self.model.named_modules():
+            self.load_parameters(module.named_parameters(recurse=False), layer_name)
+            self.load_parameters(module.named_buffers(recurse=False), layer_name)
+
+    def load_parameters(self, parameters, layer_name):
+        for name, param in parameters:
+            numpy_array = torch.clone(param).detach().numpy()
+            parameter_name = "aggregator" + "." + layer_name + "." + name
+            dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
+                            buffer=self.shm_dict[parameter_name].buf)
+            np.copyto(dst, numpy_array)
 
 
     def get(self, tag: str) -> None:
@@ -182,6 +194,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # before distributing weights, update it from global model
         self._update_weights()
+
+        #Load Parameters to shared memory
+        self.load_parameters_to_shared_memory()
 
         # send out global model parameters to trainers
         for end in channel.ends():
