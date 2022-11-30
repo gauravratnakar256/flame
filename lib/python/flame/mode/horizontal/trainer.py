@@ -114,13 +114,13 @@ class Trainer(Role, metaclass=ABCMeta):
         if tag == TAG_FETCH:
             self._fetch_weights(tag)
 
-    def get_weights_from_shared_memory(self, temp_dict):
-        model_dict = {}
-        for key in temp_dict:
-            parameter_name = "trainer" + "." + key
-            numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
-                                    buffer=self.temp_Dict[key].buf)
-            self.model_dict[key] = torch.from_numpy(numpy_array)
+    # def get_weights_from_shared_memory(self, temp_dict):
+    #     model_dict = {}
+    #     for key in temp_dict:
+    #         parameter_name = "trainer" + "." + key
+    #         numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
+    #                                 buffer=self.temp_Dict[key].buf)
+    #         self.model_dict[key] = torch.from_numpy(numpy_array)
 
     def add_shm_refrence(self, end):
         temp_dict = {}
