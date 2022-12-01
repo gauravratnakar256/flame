@@ -41,7 +41,7 @@ class Net(nn.Module):
         return output
 
 
-class PyTorchMnistAggregator(TopAggregator):
+class PyTorchMnistTopAggregator(TopAggregator):
     """PyTorch Mnist Aggregator."""
 
     def __init__(self, config: Config) -> None:
@@ -124,6 +124,6 @@ if __name__ == "__main__":
 
     config = Config(args.config)
 
-    a = PyTorchMnistAggregator(config)
+    a = PyTorchMnistTopAggregator(config)
     a.compose()
     a.run()

@@ -3,7 +3,7 @@
     "backend": "mqtt",
     "brokers": [
         {
-            "host": "flame-mosquitto",
+            "host": "broker.hivemq.com",
             "sort": "mqtt"
         }
     ],
