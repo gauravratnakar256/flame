@@ -227,6 +227,7 @@ class Trainer(Role, metaclass=ABCMeta):
             self.weights = self.model.get_weights()
 
     def release_share_mem(self):
+        del self.shm_dict_list
         for key in self.shm_dict:
             self.shm_dict[key].close()
             self.shm_dict[key].unlink()
