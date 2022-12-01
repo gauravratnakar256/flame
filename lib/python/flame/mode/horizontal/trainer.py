@@ -33,6 +33,9 @@ from ..composer import Composer
 from ..message import MessageType
 from ..role import Role
 from ..tasklet import Loop, Tasklet
+from multiprocessing import resource_tracker
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +82,23 @@ class Trainer(Role, metaclass=ABCMeta):
                 "supported ml framework not found; "
                 f"supported frameworks are: {valid_frameworks}")
 
+    def remove_shm_from_resource_tracker():
+
+        def fix_register(name, rtype):
+            if rtype == "shared_memory":
+                return
+            return resource_tracker._resource_tracker.register(self, name, rtype)
+        resource_tracker.register = fix_register
+
+        def fix_unregister(name, rtype):
+            if rtype == "shared_memory":
+                return
+            return resource_tracker._resource_tracker.unregister(self, name, rtype)
+        resource_tracker.unregister = fix_unregister
+
+        if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
+            del resource_tracker._CLEANUP_FUNCS["shared_memory"]
+
     def create_structure(self, parameters, layer_name):
         for name, param in parameters:
              numpy_array = torch.clone(param).detach().numpy()
@@ -86,6 +106,7 @@ class Trainer(Role, metaclass=ABCMeta):
              mem_size = int(numpy_array.nbytes)
              parameter_name =  layer_name + "." + name
              shared_mem_name = self.task_id + "." + layer_name + "." + name
+             self.remove_shm_from_resource_tracker()
              shm = shared_memory.SharedMemory(name=shared_mem_name, create=True, size=mem_size)
              self.shm_dict[shared_mem_name] = shm
              self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
