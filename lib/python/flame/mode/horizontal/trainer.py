@@ -164,9 +164,8 @@ class Trainer(Role, metaclass=ABCMeta):
         # logger.info("The end id of aggregator is " + end)
 
         if MessageType.WEIGHTS in msg:
-            self.weights = msg[MessageType.WEIGHTS]
-            # logger.info("Weight type is ".format(type(self.weights)))
-            print(type(msg[MessageType.WEIGHTS]))
+            #self.weights = msg[MessageType.WEIGHTS]
+            self.weights = weights
             self._update_model()
 
         if MessageType.EOT in msg:
