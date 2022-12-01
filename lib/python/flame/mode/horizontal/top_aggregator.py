@@ -22,8 +22,8 @@ import numpy as np
 from collections import OrderedDict
 
 from diskcache import Cache
-from multiprocessing.managers import SharedMemoryManager
 from multiprocessing import shared_memory
+from multiprocessing.shared_memory import SharedMemory
 
 from ...channel_manager import ChannelManager
 from ...common.custom_abcmeta import ABCMeta, abstract_attribute
@@ -95,6 +95,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.shm_dict = {}
         self.model_structure = OrderedDict()
         self.task_id = self.config.task_id
+        self.shm_dict_list = {}
 
         self.registry_client = registry_provider.get(self.config.registry.sort)
         # initialize registry client
@@ -155,6 +156,22 @@ class TopAggregator(Role, metaclass=ABCMeta):
             dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
                             buffer=self.shm_dict[shared_mem_name].buf)
             np.copyto(dst, numpy_array)
+
+    def get_weights_from_shared_mem(self, end):
+        weights_dict = OrderedDict()
+        for key in self.model_structure.keys():
+            numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
+                                    buffer=self.shm_dict_list[end][key].buf)
+            weights_dict[key] = torch.from_numpy(numpy_array)
+        return weights_dict
+
+    def add_shm_refrence(self, end):
+        temp_dict = {}
+        for key in self.model_structure.keys():
+            shared_mem_name = end + "." + key
+            shm = SharedMemory(name=shared_mem_name)
+            temp_dict[key] = shm 
+        return temp_dict
     
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
@@ -172,10 +189,16 @@ class TopAggregator(Role, metaclass=ABCMeta):
             if not msg:
                 logger.debug(f"No data from {end}; skipping it")
                 continue
+            
+            if end not in self.shm_dict_list:
+                temp_dict = self.add_shm_refrence(end)
+                self.shm_dict_list[end] = temp_dict
+            
 
             logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
-                weights = msg[MessageType.WEIGHTS]
+                fetched_weights = self.get_weights_from_shared_mem(end)
+                weights = fetched_weights
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]

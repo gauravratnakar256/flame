@@ -215,6 +215,8 @@ class Trainer(Role, metaclass=ABCMeta):
         # one aggregator is sufficient
         end = channel.one_end()
 
+        self.load_parameters_to_shared_memory()
+
         self._update_weights()
         channel.send(
             end, {
