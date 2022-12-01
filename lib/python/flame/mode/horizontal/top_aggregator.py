@@ -41,6 +41,25 @@ from multiprocessing import resource_tracker
 
 logger = logging.getLogger(__name__)
 
+def remove_shm_from_resource_tracker():
+
+        def fix_register(name, rtype):
+            if rtype == "shared_memory":
+                return
+            return resource_tracker._resource_tracker.register(self, name, rtype)
+        resource_tracker.register = fix_register
+
+        def fix_unregister(name, rtype):
+            if rtype == "shared_memory":
+                return
+            return resource_tracker._resource_tracker.unregister(self, name, rtype)
+        resource_tracker.unregister = fix_unregister
+
+        if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
+            del resource_tracker._CLEANUP_FUNCS["shared_memory"]
+
+
+
 TAG_DISTRIBUTE = 'distribute'
 TAG_AGGREGATE = 'aggregate'
 
@@ -113,7 +132,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
              mem_size = int(numpy_array.nbytes)
              parameter_name =  layer_name + "." + name
              shared_mem_name = self.task_id + "." + layer_name + "." + name
-             self.remove_shm_from_resource_tracker()
+             remove_shm_from_resource_tracker()
              shm = shared_memory.SharedMemory(name=shared_mem_name, create=True, size=mem_size)
              self.shm_dict[shared_mem_name] = shm
              self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
@@ -137,24 +156,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
                             buffer=self.shm_dict[shared_mem_name].buf)
             np.copyto(dst, numpy_array)
     
-    def remove_shm_from_resource_tracker():
-
-        def fix_register(name, rtype):
-            if rtype == "shared_memory":
-                return
-            return resource_tracker._resource_tracker.register(self, name, rtype)
-        resource_tracker.register = fix_register
-
-        def fix_unregister(name, rtype):
-            if rtype == "shared_memory":
-                return
-            return resource_tracker._resource_tracker.unregister(self, name, rtype)
-        resource_tracker.unregister = fix_unregister
-
-        if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
-            del resource_tracker._CLEANUP_FUNCS["shared_memory"]
-
-
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
         if tag == TAG_AGGREGATE:
