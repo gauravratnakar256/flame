@@ -251,6 +251,7 @@ class Trainer(Role, metaclass=ABCMeta):
         for key in self.shm_dict:
             self.shm_dict[key].close()
             self.shm_dict[key].unlink()
+        logger.info("Done with trianing of model")
 
     def compose(self) -> None:
         """Compose role with tasklets."""
@@ -283,7 +284,7 @@ class Trainer(Role, metaclass=ABCMeta):
                 task_get >> task_train >> task_eval >> task_put >>
                 task_save_metrics ) >> task_release_share_mem
 
-        logger.info("Done with trianing of model")
+    
 
     def run(self) -> None:
         """Run role."""
