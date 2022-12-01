@@ -282,7 +282,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
             self.weights = self.model.get_weights()
 
     def release_share_mem(self):
-        time.sleep(20)
         for key in self.shm_dict:
             self.shm_dict[key].close()
             self.shm_dict[key].unlink()
