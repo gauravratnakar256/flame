@@ -22,7 +22,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from flame.config import Config
 from flame.dataset import Dataset
-from flame.mode.horizontal.top_aggregator import MiddleAggregator
+from flame.mode.horizontal.middle_aggregator import MiddleAggregator
 from torchvision import datasets, transforms
 
 logger = logging.getLogger(__name__)
