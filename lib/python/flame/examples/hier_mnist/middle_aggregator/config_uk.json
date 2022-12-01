@@ -64,8 +64,8 @@
 	"name": "mnist"
     },
     "registry": {
-	"sort": "mlflow",
-	"uri": "http://flame-mlflow:5000"
+	"sort": "dummy",
+	"uri": ""
     },
     "selector": {
 	"sort": "random",
