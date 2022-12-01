@@ -197,8 +197,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
             logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
-                fetched_weights = self.get_weights_from_shared_mem(end)
-                weights = fetched_weights
+                weights = self.get_weights_from_shared_mem(end)
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
@@ -249,7 +248,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         for end in channel.ends():
             logger.debug(f"sending weights to {end}")
             channel.send(end, {
-                MessageType.WEIGHTS: self.weights,
+                MessageType.WEIGHTS: "temp",
                 MessageType.ROUND: self._round
             })
 
