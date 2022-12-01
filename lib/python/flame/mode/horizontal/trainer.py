@@ -258,7 +258,7 @@ class Trainer(Role, metaclass=ABCMeta):
             loop = Loop(loop_check_fn=lambda: self._work_done)
             task_internal_init >> task_load_data >> task_init >> task_create_model_structure >> loop(
                 task_get >> task_train >> task_eval >> task_put >>
-                task_save_metrics >> task_release_share_mem)
+                task_save_metrics ) >> task_release_share_mem
 
     def run(self) -> None:
         """Run role."""
