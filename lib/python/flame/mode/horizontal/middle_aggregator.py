@@ -169,7 +169,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             return
 
         # this call waits for at least one peer to join this channel
-        channel.wait_join()
+        channel.await_join()
 
         # one aggregator is sufficient
         end = channel.one_end()
@@ -195,7 +195,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             return
 
         # this call waits for at least one peer to join this channel
-        channel.wait_join()
+        channel.await_join()
 
         self.load_parameters_to_shared_memory()
 
