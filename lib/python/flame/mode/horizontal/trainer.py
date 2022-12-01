@@ -283,7 +283,7 @@ class Trainer(Role, metaclass=ABCMeta):
                 task_get >> task_train >> task_eval >> task_put >>
                 task_save_metrics ) >> task_release_share_mem
 
-            logger.info("Done with trianing of model")
+        logger.info("Done with trianing of model")
 
     def run(self) -> None:
         """Run role."""
