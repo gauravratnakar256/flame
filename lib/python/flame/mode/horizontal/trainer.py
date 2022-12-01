@@ -262,6 +262,8 @@ class Trainer(Role, metaclass=ABCMeta):
                 task_get >> task_train >> task_eval >> task_put >>
                 task_save_metrics ) >> task_release_share_mem
 
+            logger.info("Done with training")
+
     def run(self) -> None:
         """Run role."""
         self.composer.run()
