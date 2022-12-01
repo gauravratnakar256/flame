@@ -19,6 +19,7 @@ import logging
 import time
 import torch
 import numpy as np
+from collections import OrderedDict
 from multiprocessing.managers import SharedMemoryManager
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import shared_memory
@@ -69,7 +70,7 @@ class Trainer(Role, metaclass=ABCMeta):
         self.shm_dict_list = {}
 
         self.shm_dict = {}
-        self.model_structure = {}
+        self.model_structure = OrderedDict()
         self.task_id = self.config.task_id
 
         self.framework = get_ml_framework_in_use()
@@ -131,7 +132,7 @@ class Trainer(Role, metaclass=ABCMeta):
         return temp_dict
 
     def get_weights_from_shared_mem(self, end):
-        weights_dict = {}
+        weights_dict = OrderedDict()
         for key in self.model_structure.keys():
             logger.info("Key is {}".format(key))
             numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],

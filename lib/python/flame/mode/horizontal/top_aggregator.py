@@ -19,6 +19,7 @@ import logging
 import time
 import torch
 import numpy as np
+from collections import OrderedDict
 
 from diskcache import Cache
 from multiprocessing.managers import SharedMemoryManager
@@ -72,7 +73,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.cm.join_all()
 
         self.shm_dict = {}
-        self.model_structure = {}
+        self.model_structure = OrderedDict()
         self.task_id = self.config.task_id
 
         self.registry_client = registry_provider.get(self.config.registry.sort)
