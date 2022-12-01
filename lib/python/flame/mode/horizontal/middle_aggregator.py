@@ -27,6 +27,7 @@ from ...channel_manager import ChannelManager
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
 from ...common.custom_abcmeta import ABCMeta, abstract_attribute
+from ...common.util import MLFramework
 from ...optimizer.train_result import TrainResult
 from ...optimizers import optimizer_provider
 from ...plugin import PluginManager
@@ -181,6 +182,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         if MessageType.WEIGHTS in msg:
             self.weights = self.get_weights_from_shared_mem(end)
+            self._update_model()
 
         if MessageType.EOT in msg:
             self._work_done = msg[MessageType.EOT]
@@ -196,6 +198,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         # this call waits for at least one peer to join this channel
         channel.await_join()
+
+        self._update_weights()
 
         self.load_parameters_to_shared_memory()
 
@@ -246,6 +250,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.weights = global_weights
         self.dataset_size = total
 
+        # update model with global weights
+        self._update_model()
+
     def _send_weights(self, tag: str) -> None:
         logger.debug("calling _send_weights")
         channel = self.cm.get_by_tag(tag)
@@ -260,6 +267,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         end = channel.one_end()
 
         self.load_parameters_to_shared_memory()
+
+        self._update_weights()
 
         channel.send(
             end, {
@@ -288,6 +297,18 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             return
 
         channel.broadcast({MessageType.EOT: self._work_done})
+
+    def _update_model(self):
+        if self.framework == MLFramework.PYTORCH:
+            self.model.load_state_dict(self.weights)
+        elif self.framework == MLFramework.TENSORFLOW:
+            self.model.set_weights(self.weights)
+
+    def _update_weights(self):
+        if self.framework == MLFramework.PYTORCH:
+            self.weights = self.model.state_dict()
+        elif self.framework == MLFramework.TENSORFLOW:
+            self.weights = self.model.get_weights()
 
     def compose(self) -> None:
         """Compose role with tasklets."""
