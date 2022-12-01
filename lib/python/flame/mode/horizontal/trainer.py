@@ -134,7 +134,6 @@ class Trainer(Role, metaclass=ABCMeta):
     def get_weights_from_shared_mem(self, end):
         weights_dict = OrderedDict()
         for key in self.model_structure.keys():
-            logger.info("Key is {}".format(key))
             numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
                                     buffer=self.shm_dict_list[end][key].buf)
             weights_dict[key] = torch.from_numpy(numpy_array)
@@ -225,6 +224,11 @@ class Trainer(Role, metaclass=ABCMeta):
         elif self.framework == MLFramework.TENSORFLOW:
             self.weights = self.model.get_weights()
 
+    def release_share_mem(self):
+        for key in self.shm_dict:
+            self.shm_dict[key].close()
+            self.shm_dict[key].unlink()
+
     def compose(self) -> None:
         """Compose role with tasklets."""
         with Composer() as composer:
@@ -248,11 +252,13 @@ class Trainer(Role, metaclass=ABCMeta):
 
             task_save_metrics = Tasklet(self.save_metrics)
 
+            task_release_share_mem = Tasklet(self.release_share_mem)
+
             # create a loop object with loop exit condition function
             loop = Loop(loop_check_fn=lambda: self._work_done)
             task_internal_init >> task_load_data >> task_init >> task_create_model_structure >> loop(
                 task_get >> task_train >> task_eval >> task_put >>
-                task_save_metrics)
+                task_save_metrics >> task_release_share_mem)
 
     def run(self) -> None:
         """Run role."""

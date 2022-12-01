@@ -281,6 +281,11 @@ class TopAggregator(Role, metaclass=ABCMeta):
         elif self.framework == MLFramework.TENSORFLOW:
             self.weights = self.model.get_weights()
 
+    def release_share_mem(self):
+        for key in self.shm_dict:
+            self.shm_dict[key].close()
+            self.shm_dict[key].unlink()
+
     def compose(self) -> None:
         """Compose role with tasklets."""
         with Composer() as composer:
@@ -314,12 +319,14 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
             task_save_model = Tasklet(self.save_model)
 
+            task_release_share_mem = Tasklet(self.release_share_mem)
+
         # create a loop object with loop exit condition function
         loop = Loop(loop_check_fn=lambda: self._work_done)
         task_internal_init >> task_load_data >> task_init >> task_create_model_structure >>loop(
             task_put >> task_get >> task_train >> task_eval >> task_analysis >>
             task_save_metrics >> task_increment_round
-        ) >> task_end_of_training >> task_save_params >> task_save_model
+        ) >> task_end_of_training >> task_save_params >> task_save_model >> task_release_share_mem
 
     def run(self) -> None:
         """Run role."""
