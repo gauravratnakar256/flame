@@ -197,7 +197,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
             logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
-                logger.info(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
+                #logger.info(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.get_weights_from_shared_mem(end)
 
             if MessageType.DATASET_SIZE in msg:
