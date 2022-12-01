@@ -147,8 +147,6 @@ class Trainer(Role, metaclass=ABCMeta):
             logger.debug(f"[_fetch_weights] channel not found with tag {tag}")
             return
         
-        logger.info(self._round)
-
         # this call waits for at least one peer joins this channel
         channel.await_join()
 
@@ -174,6 +172,8 @@ class Trainer(Role, metaclass=ABCMeta):
 
         if MessageType.ROUND in msg:
             self._round = msg[MessageType.ROUND]
+
+        logger.info(self._round)
 
         logger.debug(f"work_done: {self._work_done}, round: {self._round}")
 
