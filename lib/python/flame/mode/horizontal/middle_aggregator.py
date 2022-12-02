@@ -84,6 +84,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         
     def create_model_structure(self):
         self.memory_manager.create_model_structure(self.model)
+        self.memory_manager.load_parameters_to_shared_memory(self.model)
 
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
@@ -120,7 +121,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         if MessageType.WEIGHTS in msg:
             self.weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
-            self._update_model()
+            #self._update_model()
+            self.memory_manager.copy_weights_to_shared_memory(self.weights)
 
         if MessageType.EOT in msg:
             self._work_done = msg[MessageType.EOT]
@@ -137,7 +139,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # this call waits for at least one peer to join this channel
         channel.await_join()
 
-        self._update_weights()
+        #self._update_weights()
+        self.weights = self.memory_manager().get_weights_from_shared_mem(self.memory_manager().shm_dict)
 
         #self.load_parameters_to_shared_memory()
 
@@ -181,10 +184,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             return
 
         # set global weights
-        self.weights = global_weights
+        # self.weights = global_weights
         self.dataset_size = total
 
-        self._update_model()
+        self.memory_manager().copy_weights_to_shared_memory(global_weights)
 
 
     def _send_weights(self, tag: str) -> None:
@@ -200,9 +203,11 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # one aggregator is sufficient
         end = channel.one_end()
 
-        self.memory_manager.load_parameters_to_shared_memory(self.model)
+        # self.memory_manager.load_parameters_to_shared_memory(self.model)
 
-        self._update_weights()
+        # self._update_weights()
+
+        self.weights = self.memory_manager().get_weights_from_shared_mem(self.memory_manager().shm_dict)
 
         channel.send(
             end, {
