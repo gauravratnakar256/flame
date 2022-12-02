@@ -27,7 +27,7 @@ from ...channel_manager import ChannelManager
 from multiprocessing import shared_memory
 from multiprocessing.shared_memory import SharedMemory
 from ...common.custom_abcmeta import ABCMeta, abstract_attribute
-from ...common.util import MLFramework
+from ...common.util import (MLFramework, get_ml_framework_in_use, valid_frameworks)
 from ...optimizer.train_result import TrainResult
 from ...optimizers import optimizer_provider
 from ...plugin import PluginManager
@@ -94,6 +94,12 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         self.cache = Cache()
         self.dataset_size = 0
+
+        self.framework = get_ml_framework_in_use()
+        if self.framework == MLFramework.UNKNOWN:
+            raise NotImplementedError(
+                "supported ml framework not found; "
+                f"supported frameworks are: {valid_frameworks}")
 
     def create_structure(self, parameters, layer_name):
         for name, param in parameters:
