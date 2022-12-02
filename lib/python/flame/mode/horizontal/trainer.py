@@ -176,7 +176,7 @@ class Trainer(Role, metaclass=ABCMeta):
         if MessageType.WEIGHTS in msg:
             #self.weights = msg[MessageType.WEIGHTS]
             self.weights = self.get_weights_from_shared_mem(end)
-            if msg[MessageType.WEIGHTS] == self.weights:
+            if msg[MessageType.WEIGHTS].__str__() == self.weights.__str__():
                 logger.info("Two Dicts are same")
             else:
                 logger.info("Two Dicts are different")
