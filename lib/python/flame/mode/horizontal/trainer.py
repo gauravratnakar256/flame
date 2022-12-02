@@ -17,12 +17,6 @@
 
 import logging
 import time
-import torch
-import numpy as np
-from collections import OrderedDict
-from multiprocessing.managers import SharedMemoryManager
-from multiprocessing.shared_memory import SharedMemory
-from multiprocessing import shared_memory
 
 from ...channel_manager import ChannelManager
 from ...common.custom_abcmeta import ABCMeta, abstract_attribute
@@ -33,31 +27,11 @@ from ..composer import Composer
 from ..message import MessageType
 from ..role import Role
 from ..tasklet import Loop, Tasklet
-from multiprocessing import resource_tracker
-
-
 
 logger = logging.getLogger(__name__)
 
 TAG_FETCH = 'fetch'
 TAG_UPLOAD = 'upload'
-
-def remove_shm_from_resource_tracker():
-
-        def fix_register(name, rtype):
-            if rtype == "shared_memory":
-                return
-            return resource_tracker._resource_tracker.register(self, name, rtype)
-        resource_tracker.register = fix_register
-
-        def fix_unregister(name, rtype):
-            if rtype == "shared_memory":
-                return
-            return resource_tracker._resource_tracker.unregister(self, name, rtype)
-        resource_tracker.unregister = fix_unregister
-
-        if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
-            del resource_tracker._CLEANUP_FUNCS["shared_memory"]
 
 
 class Trainer(Role, metaclass=ABCMeta):
@@ -87,71 +61,16 @@ class Trainer(Role, metaclass=ABCMeta):
         self._round = 1
         self._work_done = False
 
-        self.shm_dict_list = {}
-
-        self.shm_dict = {}
-        self.model_structure = OrderedDict()
-        self.task_id = self.config.task_id
-
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
             raise NotImplementedError(
                 "supported ml framework not found; "
                 f"supported frameworks are: {valid_frameworks}")
 
-    def create_structure(self, parameters, layer_name):
-        for name, param in parameters:
-             numpy_array = torch.clone(param).detach().numpy()
-             numpy_array_datatype = numpy_array.dtype
-             mem_size = int(numpy_array.nbytes)
-             parameter_name =  layer_name + "." + name
-             shared_mem_name = self.task_id + "." + layer_name + "." + name
-             remove_shm_from_resource_tracker()
-             shm = shared_memory.SharedMemory(name=shared_mem_name, create=True, size=mem_size)
-             self.shm_dict[shared_mem_name] = shm
-             self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
-
-    def create_model_structure(self):
-        for layer_name, module in self.model.named_modules():
-            self.create_structure(module.named_parameters(recurse=False), layer_name)
-            self.create_structure(module.named_buffers(recurse=False), layer_name)
-
-    def load_parameters_to_shared_memory(self):
-        for layer_name, module in self.model.named_modules():
-            self.load_parameters(module.named_parameters(recurse=False), layer_name)
-            self.load_parameters(module.named_buffers(recurse=False), layer_name)
-
-    def load_parameters(self, parameters, layer_name):
-        for name, param in parameters:
-            numpy_array = torch.clone(param).detach().numpy()
-            parameter_name = layer_name + "." + name
-            shared_mem_name = self.task_id + "." + layer_name + "." + name
-            dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
-                            buffer=self.shm_dict[shared_mem_name].buf)
-            np.copyto(dst, numpy_array)
-
-
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
         if tag == TAG_FETCH:
             self._fetch_weights(tag)
-
-    def add_shm_refrence(self, end):
-        temp_dict = {}
-        for key in self.model_structure.keys():
-            shared_mem_name = end + "." + key
-            shm = SharedMemory(name=shared_mem_name)
-            temp_dict[key] = shm 
-        return temp_dict
-
-    def get_weights_from_shared_mem(self, end):
-        weights_dict = OrderedDict()
-        for key in self.model_structure.keys():
-            numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
-                                    buffer=self.shm_dict_list[end][key].buf)
-            weights_dict[key] = torch.from_numpy(numpy_array)
-        return weights_dict
-
 
     def _fetch_weights(self, tag: str) -> None:
         logger.debug("calling _fetch_weights")
@@ -159,7 +78,7 @@ class Trainer(Role, metaclass=ABCMeta):
         if not channel:
             logger.debug(f"[_fetch_weights] channel not found with tag {tag}")
             return
-        
+
         # this call waits for at least one peer joins this channel
         channel.await_join()
 
@@ -167,20 +86,8 @@ class Trainer(Role, metaclass=ABCMeta):
         end = channel.one_end()
         msg = channel.recv(end)
 
-        if not end in self.shm_dict_list:
-            temp_dict = self.add_shm_refrence(end)
-            self.shm_dict_list[end] = temp_dict
-
-        # logger.info("The end id of aggregator is " + end)
-
         if MessageType.WEIGHTS in msg:
-            #self.weights = msg[MessageType.WEIGHTS]
-            self.weights = self.get_weights_from_shared_mem(end)
-            if msg[MessageType.WEIGHTS].__str__() == self.weights.__str__():
-                logger.info("Two Dicts are same")
-            else:
-                logger.info("Two Dicts are different")
-              
+            self.weights = msg[MessageType.WEIGHTS]
             self._update_model()
 
         if MessageType.EOT in msg:
@@ -188,8 +95,6 @@ class Trainer(Role, metaclass=ABCMeta):
 
         if MessageType.ROUND in msg:
             self._round = msg[MessageType.ROUND]
-
-        logger.info(self._round)
 
         logger.debug(f"work_done: {self._work_done}, round: {self._round}")
 
@@ -211,12 +116,10 @@ class Trainer(Role, metaclass=ABCMeta):
         # one aggregator is sufficient
         end = channel.one_end()
 
-        self.load_parameters_to_shared_memory()
-
         self._update_weights()
         channel.send(
             end, {
-                MessageType.WEIGHTS: "temp",
+                MessageType.WEIGHTS: self.weights,
                 MessageType.DATASET_SIZE: self.dataset_size
             })
         logger.debug("sending weights done")
@@ -244,13 +147,6 @@ class Trainer(Role, metaclass=ABCMeta):
         elif self.framework == MLFramework.TENSORFLOW:
             self.weights = self.model.get_weights()
 
-    def release_share_mem(self):
-        del self.shm_dict_list
-        for key in self.shm_dict:
-            self.shm_dict[key].close()
-            self.shm_dict[key].unlink()
-        logger.info("Done with trianing of model")
-
     def compose(self) -> None:
         """Compose role with tasklets."""
         with Composer() as composer:
@@ -262,8 +158,6 @@ class Trainer(Role, metaclass=ABCMeta):
 
             task_init = Tasklet(self.initialize)
 
-            task_create_model_structure = Tasklet(self.create_model_structure)
-
             task_get = Tasklet(self.get, TAG_FETCH)
 
             task_train = Tasklet(self.train)
@@ -274,15 +168,11 @@ class Trainer(Role, metaclass=ABCMeta):
 
             task_save_metrics = Tasklet(self.save_metrics)
 
-            task_release_share_mem = Tasklet(self.release_share_mem)
-
             # create a loop object with loop exit condition function
             loop = Loop(loop_check_fn=lambda: self._work_done)
-            task_internal_init >> task_load_data >> task_init >> task_create_model_structure >> loop(
+            task_internal_init >> task_load_data >> task_init >> loop(
                 task_get >> task_train >> task_eval >> task_put >>
-                task_save_metrics ) >> task_release_share_mem
-
-    
+                task_save_metrics)
 
     def run(self) -> None:
         """Run role."""

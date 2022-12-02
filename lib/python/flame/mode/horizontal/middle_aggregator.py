@@ -207,7 +207,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         self._update_weights()
 
-        self.load_parameters_to_shared_memory()
+        #self.load_parameters_to_shared_memory()
 
         for end in channel.ends():
             logger.debug(f"sending weights to {end}")
@@ -228,12 +228,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
                 logger.debug(f"No data from {end}; skipping it")
                 continue
 
-            if end not in self.shm_dict_list:
-                temp_dict = self.add_shm_refrence(end)
-                self.shm_dict_list[end] = temp_dict
-
             if MessageType.WEIGHTS in msg:
-                weights = self.get_weights_from_shared_mem(end)
+                weights = msg[MessageType.WEIGHTS]
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
@@ -256,8 +252,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.weights = global_weights
         self.dataset_size = total
 
-        # update model with global weights
-        self._update_model()
 
     def _send_weights(self, tag: str) -> None:
         logger.debug("calling _send_weights")
