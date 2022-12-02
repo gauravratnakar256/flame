@@ -97,7 +97,7 @@ class MemoryManager():
             src = torch.clone(weights[key]).detach().numpy()
             np.copyto(dst, src)
 
-    def get_weights_from_shared_mem(self):
+    def get_weights_from_shared_mem_self(self):
         weights_dict = OrderedDict()
         for key in self.model_structure.keys():
             shared_mem_name = self.task_id + "." + key
