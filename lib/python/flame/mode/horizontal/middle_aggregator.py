@@ -207,7 +207,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         # self._update_weights()
 
-        self.weights = self.memory_manager().get_weights_from_shared_mem()
+        self.weights = self.memory_manager.get_weights_from_shared_mem()
 
         channel.send(
             end, {
