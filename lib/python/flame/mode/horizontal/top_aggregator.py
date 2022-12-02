@@ -38,6 +38,7 @@ from ..message import MessageType
 from ..role import Role
 from ..tasklet import Loop, Tasklet
 from multiprocessing import resource_tracker
+from ..memory_manager import MemoryManager
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +122,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self._work_done = False
 
         remove_shm_from_resource_tracker()
+        memory_manager = MemoryManager(task_id=self.task_id)
 
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
