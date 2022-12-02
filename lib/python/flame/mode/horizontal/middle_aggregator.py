@@ -212,7 +212,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         for end in channel.ends():
             logger.debug(f"sending weights to {end}")
             channel.send(end, {
-                MessageType.WEIGHTS: self.weights,
+                MessageType.WEIGHTS: "Send Model Weights",
                 MessageType.ROUND: self._round
             })
 
@@ -278,7 +278,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         channel.send(
             end, {
-                MessageType.WEIGHTS: self.weights,
+                MessageType.WEIGHTS: "Send Model weights",
                 MessageType.DATASET_SIZE: self.dataset_size
             })
         logger.debug("sending weights done")
