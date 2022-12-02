@@ -100,8 +100,9 @@ class MemoryManager():
     def get_weights_from_shared_mem(self):
         weights_dict = OrderedDict()
         for key in self.model_structure.keys():
+            shared_mem_name = self.task_id + "." + key
             numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
-                                    buffer=self.shm_dict[key].buf)
+                                    buffer=self.shm_dict[shared_mem_name].buf)
             weights_dict[key] = torch.from_numpy(numpy_array)
         return weights_dict
 
