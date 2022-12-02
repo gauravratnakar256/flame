@@ -252,6 +252,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.weights = global_weights
         self.dataset_size = total
 
+        self._update_model()
+
 
     def _send_weights(self, tag: str) -> None:
         logger.debug("calling _send_weights")
