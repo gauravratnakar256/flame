@@ -120,6 +120,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
             self._rounds = self.config.hyperparameters['rounds']
         self._work_done = False
 
+        remove_shm_from_resource_tracker()
+
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
             raise NotImplementedError(
@@ -133,7 +135,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
              mem_size = int(numpy_array.nbytes)
              parameter_name =  layer_name + "." + name
              shared_mem_name = self.task_id + "." + layer_name + "." + name
-             remove_shm_from_resource_tracker()
              shm = shared_memory.SharedMemory(name=shared_mem_name, create=True, size=mem_size)
              self.shm_dict[shared_mem_name] = shm
              self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
