@@ -97,6 +97,9 @@ class MemoryManager():
             src = torch.clone(weights[key]).detach().numpy()
             np.copyto(dst, src)
 
+    def get_shm_dict(self):
+        return self.shm_dict
+
 
 
     
