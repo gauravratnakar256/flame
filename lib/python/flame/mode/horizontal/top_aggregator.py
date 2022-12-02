@@ -199,6 +199,10 @@ class TopAggregator(Role, metaclass=ABCMeta):
             if MessageType.WEIGHTS in msg:
                 #logger.info(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.get_weights_from_shared_mem(end)
+                if msg[MessageType.WEIGHTS] == self.weights:
+                    logger.info("Two Dicts are same")
+                else:
+                    logger.info("Two Dicts are different")
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]

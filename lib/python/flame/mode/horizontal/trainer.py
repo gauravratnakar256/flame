@@ -176,6 +176,11 @@ class Trainer(Role, metaclass=ABCMeta):
         if MessageType.WEIGHTS in msg:
             #self.weights = msg[MessageType.WEIGHTS]
             self.weights = self.get_weights_from_shared_mem(end)
+            if msg[MessageType.WEIGHTS] == self.weights:
+                logger.info("Two Dicts are same")
+            else:
+                logger.info("Two Dicts are different")
+              
             self._update_model()
 
         if MessageType.EOT in msg:
