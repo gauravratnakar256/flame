@@ -22,9 +22,6 @@ import numpy as np
 from collections import OrderedDict
 
 from diskcache import Cache
-from multiprocessing import shared_memory
-from multiprocessing.shared_memory import SharedMemory
-
 from ...channel_manager import ChannelManager
 from ...common.custom_abcmeta import ABCMeta, abstract_attribute
 from ...common.util import (MLFramework, get_ml_framework_in_use,
@@ -37,7 +34,6 @@ from ..composer import Composer
 from ..message import MessageType
 from ..role import Role
 from ..tasklet import Loop, Tasklet
-from multiprocessing import resource_tracker
 from ..memory_manager import MemoryManager
 
 logger = logging.getLogger(__name__)
