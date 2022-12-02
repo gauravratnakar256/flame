@@ -109,7 +109,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 f"supported frameworks are: {valid_frameworks}")
 
     def create_model_structure(self):
-        self.create_model_structure(self.model, self.task)
+        self.create_model_structure(self.model, self.task_id)
  
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
