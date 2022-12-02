@@ -30,7 +30,7 @@ class MemoryManager():
         self.model_structure = OrderedDict()
         self.task_id = task_id
 
-    def create_structure(self, parameters, layer_name, shm_dict, model_structure):
+    def create_structure(self, parameters, layer_name):
         for name, param in parameters:
              numpy_array = torch.clone(param).detach().numpy()
              numpy_array_datatype = numpy_array.dtype
@@ -38,10 +38,10 @@ class MemoryManager():
              parameter_name =  layer_name + "." + name
              shared_mem_name = self.task_id + "." + layer_name + "." + name
              shm = shared_memory.SharedMemory(name=shared_mem_name, create=True, size=mem_size)
-             shm_dict[shared_mem_name] = shm
-             model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
+             self.shm_dict[shared_mem_name] = shm
+             self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
 
-    def create_model_structure(self, model, task_id):
+    def create_model_structure(self, model):
         for layer_name, module in model.named_modules():
             self.create_structure(module.named_parameters(recurse=False), layer_name)
             self.create_structure(module.named_buffers(recurse=False), layer_name)

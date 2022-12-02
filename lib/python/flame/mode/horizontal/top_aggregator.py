@@ -42,25 +42,6 @@ from ..memory_manager import MemoryManager
 
 logger = logging.getLogger(__name__)
 
-def remove_shm_from_resource_tracker():
-
-        def fix_register(name, rtype):
-            if rtype == "shared_memory":
-                return
-            return resource_tracker._resource_tracker.register(self, name, rtype)
-        resource_tracker.register = fix_register
-
-        def fix_unregister(name, rtype):
-            if rtype == "shared_memory":
-                return
-            return resource_tracker._resource_tracker.unregister(self, name, rtype)
-        resource_tracker.unregister = fix_unregister
-
-        if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
-            del resource_tracker._CLEANUP_FUNCS["shared_memory"]
-
-
-
 TAG_DISTRIBUTE = 'distribute'
 TAG_AGGREGATE = 'aggregate'
 
@@ -93,9 +74,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.cm(self.config)
         self.cm.join_all()
 
-        self.shm_dict = {}
-        self.model_structure = OrderedDict()
-        self.task_id = self.config.task_id
         self.shm_dict_list = {}
 
         self.registry_client = registry_provider.get(self.config.registry.sort)
@@ -121,8 +99,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             self._rounds = self.config.hyperparameters['rounds']
         self._work_done = False
 
-        remove_shm_from_resource_tracker()
-        memory_manager = MemoryManager(task_id=self.task_id)
+        self.memory_manager = MemoryManager(task_id=self.task_id)
 
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
@@ -130,52 +107,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 "supported ml framework not found; "
                 f"supported frameworks are: {valid_frameworks}")
 
-    def create_structure(self, parameters, layer_name):
-        for name, param in parameters:
-             numpy_array = torch.clone(param).detach().numpy()
-             numpy_array_datatype = numpy_array.dtype
-             mem_size = int(numpy_array.nbytes)
-             parameter_name =  layer_name + "." + name
-             shared_mem_name = self.task_id + "." + layer_name + "." + name
-             shm = shared_memory.SharedMemory(name=shared_mem_name, create=True, size=mem_size)
-             self.shm_dict[shared_mem_name] = shm
-             self.model_structure[parameter_name] = {'memsize': mem_size, 'dtype': numpy_array_datatype,'shape': numpy_array.shape}
-
     def create_model_structure(self):
-        for layer_name, module in self.model.named_modules():
-            self.create_structure(module.named_parameters(recurse=False), layer_name)
-            self.create_structure(module.named_buffers(recurse=False), layer_name)
-
-    def load_parameters_to_shared_memory(self):
-        for layer_name, module in self.model.named_modules():
-            self.load_parameters(module.named_parameters(recurse=False), layer_name)
-            self.load_parameters(module.named_buffers(recurse=False), layer_name)
-
-    def load_parameters(self, parameters, layer_name):
-        for name, param in parameters:
-            numpy_array = torch.clone(param).detach().numpy()
-            parameter_name = layer_name + "." + name
-            shared_mem_name = self.task_id + "." + layer_name + "." + name
-            dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
-                            buffer=self.shm_dict[shared_mem_name].buf)
-            np.copyto(dst, numpy_array)
-
-    def get_weights_from_shared_mem(self, end):
-        weights_dict = OrderedDict()
-        for key in self.model_structure.keys():
-            numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
-                                    buffer=self.shm_dict_list[end][key].buf)
-            weights_dict[key] = torch.from_numpy(numpy_array)
-        return weights_dict
-
-    def add_shm_refrence(self, end):
-        temp_dict = {}
-        for key in self.model_structure.keys():
-            shared_mem_name = end + "." + key
-            shm = SharedMemory(name=shared_mem_name)
-            temp_dict[key] = shm 
-        return temp_dict
-    
+        self.create_model_structure(self.model, self.task)
+ 
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
         if tag == TAG_AGGREGATE:
@@ -194,14 +128,14 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 continue
             
             if end not in self.shm_dict_list:
-                temp_dict = self.add_shm_refrence(end)
+                temp_dict = self.memory_manager.add_shm_refrence(end)
                 self.shm_dict_list[end] = temp_dict
             
 
             logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
                 #logger.info(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
-                weights = self.get_weights_from_shared_mem(end)
+                weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
                 if msg[MessageType.WEIGHTS].__str__() == weights.__str__():
                     logger.info("Two Dicts are same")
                 else:
@@ -250,7 +184,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self._update_weights()
 
         #Load Parameters to shared memory
-        self.load_parameters_to_shared_memory()
+        self.memory_manager.load_parameters_to_shared_memory(self.model)
 
         # send out global model parameters to trainers
         for end in channel.ends():
@@ -332,9 +266,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             self.weights = self.model.get_weights()
 
     def release_share_mem(self):
-        for key in self.shm_dict:
-            self.shm_dict[key].close()
-            self.shm_dict[key].unlink()
+       self.memory_manager.release_share_mem()
 
     def compose(self) -> None:
         """Compose role with tasklets."""
