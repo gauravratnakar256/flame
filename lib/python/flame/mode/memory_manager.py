@@ -97,8 +97,13 @@ class MemoryManager():
             src = torch.clone(weights[key]).detach().numpy()
             np.copyto(dst, src)
 
-    def get_shm_dict(self):
-        return self.shm_dict
+    def get_weights_from_shared_mem(self):
+        weights_dict = OrderedDict()
+        for key in self.model_structure.keys():
+            numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
+                                    buffer=self.shm_dict[key].buf)
+            weights_dict[key] = torch.from_numpy(numpy_array)
+        return weights_dict
 
 
 

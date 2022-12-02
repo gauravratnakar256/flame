@@ -140,7 +140,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         channel.await_join()
 
         #self._update_weights()
-        self.weights = self.memory_manager().get_weights_from_shared_mem(self.memory_manager().shm_dict)
+        self.weights = self.memory_manager().get_weights_from_shared_mem()
 
         #self.load_parameters_to_shared_memory()
 
@@ -207,8 +207,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         # self._update_weights()
 
-        temp = self.memory_manager().get_shm_dict()
-        self.weights = self.memory_manager().get_weights_from_shared_mem(temp)
+        self.weights = self.memory_manager().get_weights_from_shared_mem()
 
         channel.send(
             end, {
