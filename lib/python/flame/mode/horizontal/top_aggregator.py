@@ -75,6 +75,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.cm.join_all()
 
         self.shm_dict_list = {}
+        self.task_id = self.config.task_id
 
         self.registry_client = registry_provider.get(self.config.registry.sort)
         # initialize registry client
