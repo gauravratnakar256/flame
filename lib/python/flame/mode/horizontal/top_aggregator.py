@@ -162,7 +162,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # update model with global weights
         #self._update_model()
-        self.memory_manager().copy_weights_to_shared_memory(global_weights)
+        self.memory_manager.copy_weights_to_shared_memory(global_weights)
 
     def put(self, tag: str) -> None:
         """Set data to remote role(s)."""
