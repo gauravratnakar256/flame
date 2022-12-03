@@ -207,11 +207,11 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         # self._update_weights()
 
-        self.weights = self.memory_manager.get_weights_from_shared_mem_self()
+        #self.weights = self.memory_manager.get_weights_from_shared_mem_self()
 
         channel.send(
             end, {
-                MessageType.WEIGHTS: self.weights,
+                MessageType.WEIGHTS: "Fetch weights from middle aggregator",
                 MessageType.DATASET_SIZE: self.dataset_size
             })
         logger.debug("sending weights done")
