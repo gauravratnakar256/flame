@@ -184,7 +184,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             return
 
         # set global weights
-        # self.weights = global_weights
+        self.weights = global_weights
         self.dataset_size = total
 
         self.memory_manager.copy_weights_to_shared_memory(global_weights)
@@ -207,7 +207,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         # self._update_weights()
 
-        #self.weights = self.memory_manager.get_weights_from_shared_mem_self()
+        self.weights = self.memory_manager.get_weights_from_shared_mem_self()
 
         channel.send(
             end, {

@@ -158,7 +158,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             return
 
         # set global weights
-        #self.weights = global_weights
+        self.weights = global_weights
 
         # update model with global weights
         #self._update_model()
@@ -181,7 +181,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # before distributing weights, update it from global model
         #self._update_weights()
-        #self.weights = self.memory_manager.get_weights_from_shared_mem_self()
+        self.weights = self.memory_manager.get_weights_from_shared_mem_self()
 
         #Load Parameters to shared memory
         #self.memory_manager.load_parameters_to_shared_memory(self.model)
