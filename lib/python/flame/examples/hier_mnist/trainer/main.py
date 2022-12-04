@@ -8,6 +8,8 @@ import torch.utils.data as data_utils
 from flame.config import Config
 from flame.mode.horizontal.trainer import Trainer
 from torchvision import datasets, transforms
+import torch
+import torchvision
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +66,8 @@ class PyTorchMnistTrainer(Trainer):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model = Net().to(self.device)
+        #self.model = Net().to(self.device)
+        self.model = torchvision.models.resnet50()
 
     def load_data(self) -> None:
         """Load data."""
