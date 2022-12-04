@@ -119,6 +119,11 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 continue
 
             logger.info(f"received data from {end}")
+            if end not in self.shm_dict_list:
+                temp_dict = self.memory_manager.add_shm_refrence(end)
+                self.shm_dict_list[end] = temp_dict
+
+
             if MessageType.WEIGHTS in msg:
                 weights = msg[MessageType.WEIGHTS]
 
