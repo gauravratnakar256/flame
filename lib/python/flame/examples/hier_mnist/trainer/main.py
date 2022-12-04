@@ -119,6 +119,8 @@ class PyTorchMedMNistTrainer(Trainer):
         """Train a model."""
         self.model.load_state_dict(self.weights)
 
+        logger.info("Started Training of Model")
+
         for epoch in range(self.epochs):
             self.model.train()
             loss_lst = list()
@@ -138,6 +140,7 @@ class PyTorchMedMNistTrainer(Trainer):
 
     def evaluate(self) -> None:
         """Evaluate a model."""
+        logger.info("Started Evaluating of Model")
         self.model.eval()
         loss_lst = list()
         labels = torch.tensor([],device=self.device)
