@@ -104,9 +104,11 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         end = channel.one_end()
         msg = channel.recv(end)
 
+        logger.info("Before start of loop")
         # if not end in self.shm_dict_list:
         #     temp_dict = self.memory_manager.add_shm_refrence(end)
         #     self.shm_dict_list[end] = temp_dict
+        logger.info(" After end of loop")
 
         if MessageType.WEIGHTS in msg:
             self.weights = msg[MessageType.WEIGHTS]
