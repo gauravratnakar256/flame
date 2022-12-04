@@ -74,7 +74,7 @@ class PyTorchMedMNistTrainer(Trainer):
     def initialize(self) -> None:
         """Initialize role."""
 
-        self.model = CNN(num_classes=9) # Should we add number of classes this into config?
+        self.model = torchvision.models.resnet50()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3, weight_decay=1e-5)
         self.criterion = torch.nn.CrossEntropyLoss()
 
