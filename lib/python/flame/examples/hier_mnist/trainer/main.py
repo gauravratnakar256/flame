@@ -76,7 +76,7 @@ class PyTorchMedMNistTrainer(Trainer):
 
         #self.model = torchvision.models.resnet50()
         self.model = CNN(num_classes=9)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3, weight_decay=1e-5)
+        self.moptimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3, weight_decay=1e-5)
         self.criterion = torch.nn.CrossEntropyLoss()
 
     def load_data(self) -> None:
@@ -128,12 +128,12 @@ class PyTorchMedMNistTrainer(Trainer):
 
             for data, label in self.train_loader:
                 data, label = data.to(self.device), label.to(self.device)
-                self.optimizer.zero_grad()
+                self.moptimizer.zero_grad()
                 output = self.model(data)
                 loss = self.criterion(output, label.squeeze()) # Squeeze because of multi-class classification instead of multi-label classification.
                 loss_lst.append(loss.item())
                 loss.backward()
-                self.optimizer.step()
+                self.moptimizer.step()
 
             train_loss = sum(loss_lst) / len(loss_lst)
             self.update_metrics({"Train Loss": train_loss})
