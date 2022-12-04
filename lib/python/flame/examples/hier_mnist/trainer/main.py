@@ -13,156 +13,117 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier: Apache-2.0
-
-"""MedMNIST trainer for PyTorch."""
+"""HIRE_MNIST horizontal hierarchical FL trainer for Keras."""
 
 import logging
-from flame.common.util import install_packages
-install_packages(['scikit-learn', 'medmnist'])
+from random import randrange
+from statistics import mean
 
+import numpy as np
 from flame.config import Config
 from flame.mode.horizontal.trainer import Trainer
-import torch
-import torchvision
-import medmnist
-from medmnist import INFO
-from sklearn.metrics import accuracy_score
+from tensorflow import keras
+from tensorflow.keras import layers
 
 logger = logging.getLogger(__name__)
 
-class CNN(torch.nn.Module):
-    """CNN Class"""
 
-    def __init__(self, num_classes):
-        """Initialize."""
-        super(CNN, self).__init__()
-        self.num_classes = num_classes
-        self.features = torch.nn.Sequential(
-            torch.nn.Conv2d(3, 6, kernel_size=3, padding=1),
-            torch.nn.BatchNorm2d(6),
-            torch.nn.ReLU(),
-            torch.nn.MaxPool2d(kernel_size=2, stride=2),
-            torch.nn.Conv2d(6, 16, kernel_size=3, padding=1),
-            torch.nn.BatchNorm2d(16),
-            torch.nn.ReLU(),
-            torch.nn.MaxPool2d(kernel_size=2, stride=2)
-        )
-        self.fc = torch.nn.Linear(16 * 7 * 7, num_classes)
-
-    def forward(self, x):
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
-        return x
-
-class PyTorchMedMNistTrainer(Trainer):
-    """PyTorch MedMNist Trainer"""
+class KerasMnistTrainer(Trainer):
+    """Keras Mnist Trainer."""
 
     def __init__(self, config: Config) -> None:
+        """Initialize a class instance."""
         self.config = config
         self.dataset_size = 0
 
-        self.model = None
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.num_classes = 10
+        self.input_shape = (28, 28, 1)
 
-        self.train_loader = None
-        self.val_loader = None
+        self.model = None
+        self._x_train = None
+        self._y_train = None
+        self._x_test = None
+        self._y_test = None
 
         self.epochs = self.config.hyperparameters['epochs']
-        self.batch_size = self.config.hyperparameters['batchSize']
+        self.batch_size = 128
+        if 'batchSize' in self.config.hyperparameters:
+            self.batch_size = self.config.hyperparameters['batchSize']
 
     def initialize(self) -> None:
         """Initialize role."""
+        model = keras.Sequential([
+            keras.Input(shape=self.input_shape),
+            layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
+            layers.MaxPooling2D(pool_size=(2, 2)),
+            layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
+            layers.MaxPooling2D(pool_size=(2, 2)),
+            layers.Flatten(),
+            layers.Dropout(0.5),
+            layers.Dense(self.num_classes, activation="softmax"),
+        ])
 
-        #self.model = torchvision.models.resnet50()
-        self.model = CNN(num_classes=9)
-        self.moptimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3, weight_decay=1e-5)
-        self.criterion = torch.nn.CrossEntropyLoss()
+        model.compile(loss="categorical_crossentropy",
+                      optimizer="adam",
+                      metrics=["accuracy"])
+
+        self.model = model
 
     def load_data(self) -> None:
-        """MedMNIST Pathology Dataset
-        The dataset is kindly released by Jakob Nikolas Kather, Johannes Krisam, et al. (2019) in their paper 
-        "Predicting survival from colorectal cancer histology slides using deep learning: A retrospective multicenter study",
-        and made available through Yang et al. (2021) in 
-        "MedMNIST Classification Decathlon: A Lightweight AutoML Benchmark for Medical Image Analysis".
-        Dataset Repo: https://github.com/MedMNIST/MedMNIST
-        """
-        info = INFO["pathmnist"]
-        DataClass = getattr(medmnist, info['python_class'])
- 
-        data_transform = torchvision.transforms.Compose([
-            torchvision.transforms.ToTensor(),
-            torchvision.transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
-        ])
-        train_dataset = DataClass(split='train', transform=data_transform, download=True)
-        val_dataset = DataClass(split='val', transform=data_transform, download=True)
+        """Load data."""
+        # the data, split between train and test sets
+        (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 
-        self.train_loader = torch.utils.data.DataLoader(
-            train_dataset, 
-            batch_size=self.batch_size, 
-            shuffle=True, 
-            num_workers=4 * torch.cuda.device_count(),
-            pin_memory=True,
-            drop_last=True
-        )
-        self.val_loader = torch.utils.data.DataLoader(
-            val_dataset,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=4 * torch.cuda.device_count(),
-            pin_memory=True,
-            drop_last=True
-        )
+        split_n = 10
+        index = randrange(split_n)
+        # reduce train sample size to reduce the runtime
+        x_train = np.split(x_train, split_n)[index]
+        y_train = np.split(y_train, split_n)[index]
+        x_test = np.split(x_test, split_n)[index]
+        y_test = np.split(y_test, split_n)[index]
 
-        self.dataset_size = len(train_dataset)
+        # Scale images to the [0, 1] range
+        x_train = x_train.astype("float32") / 255
+        x_test = x_test.astype("float32") / 255
+        # Make sure images have shape (28, 28, 1)
+        x_train = np.expand_dims(x_train, -1)
+        x_test = np.expand_dims(x_test, -1)
+
+        # convert class vectors to binary class matrices
+        y_train = keras.utils.to_categorical(y_train, self.num_classes)
+        y_test = keras.utils.to_categorical(y_test, self.num_classes)
+
+        self._x_train = x_train
+        self._y_train = y_train
+        self._x_test = x_test
+        self._y_test = y_test
 
     def train(self) -> None:
         """Train a model."""
-        self.model.load_state_dict(self.weights)
+        history = self.model.fit(self._x_train,
+                                 self._y_train,
+                                 batch_size=self.batch_size,
+                                 epochs=self.epochs,
+                                 validation_split=0.1)
 
-        logger.info("Started Training of Model")
+        # save dataset size so that the info can be shared with aggregator
+        self.dataset_size = len(self._x_train)
 
-        for epoch in range(self.epochs):
-            self.model.train()
-            loss_lst = list()
-
-            for data, label in self.train_loader:
-                data, label = data.to(self.device), label.to(self.device)
-                self.moptimizer.zero_grad()
-                output = self.model(data)
-                loss = self.criterion(output, label.squeeze()) # Squeeze because of multi-class classification instead of multi-label classification.
-                loss_lst.append(loss.item())
-                loss.backward()
-                self.moptimizer.step()
-
-            train_loss = sum(loss_lst) / len(loss_lst)
-            self.update_metrics({"Train Loss": train_loss})
-            logger.info(f"Epoch: {epoch+1}, Train Loss: {train_loss}")
+        loss = mean(history.history['loss'])
+        accuracy = mean(history.history['accuracy'])
+        self.update_metrics({'loss': loss, 'accuracy': accuracy})
 
     def evaluate(self) -> None:
         """Evaluate a model."""
-        logger.info("Started Evaluating of Model")
-        self.model.eval()
-        loss_lst = list()
-        labels = torch.tensor([],device=self.device)
-        labels_pred = torch.tensor([],device=self.device)
-        with torch.no_grad():
-            for data, label in self.val_loader:
-                data, label = data.to(self.device), label.to(self.device)
-                output = self.model(data)
-                loss = self.criterion(output, label.squeeze())
-                loss_lst.append(loss.item())
-                labels_pred = torch.cat([labels_pred, output.argmax(dim=1)], dim=0)
-                labels = torch.cat([labels, label], dim=0)
+        score = self.model.evaluate(self._x_test, self._y_test, verbose=0)
 
-        labels_pred = labels_pred.cpu().detach().numpy()
-        labels = labels.cpu().detach().numpy()
-        val_acc = accuracy_score(labels, labels_pred)
+        logger.info(f"Test loss: {score[0]}")
+        logger.info(f"Test accuracy: {score[1]}")
 
-        val_loss = sum(loss_lst) / len(loss_lst)
-        self.update_metrics({"Val Loss": val_loss, "Val Accuracy": val_acc})
-        logger.info(f"Test Loss: {val_loss}")
-        logger.info(f"Test Accuracy: {val_acc}")
+        # update metrics after each evaluation so that the metrics can be
+        # logged in a model registry.
+        self.update_metrics({'test-loss': score[0], 'test-accuracy': score[1]})
+
 
 if __name__ == "__main__":
     import argparse
@@ -174,7 +135,6 @@ if __name__ == "__main__":
 
     config = Config(args.config)
 
-    t = PyTorchMedMNistTrainer(config)
+    t = KerasMnistTrainer(config)
     t.compose()
     t.run()
-        

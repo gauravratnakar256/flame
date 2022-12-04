@@ -46,7 +46,7 @@
             }
         }
     ],
-    "dataset": "https://raw.githubusercontent.com/gauravratnakar256/flamedatasets/main/medmnistdatasets/datasets/site118.npz",
+    "dataset": "https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz",
     "dependencies": [
         "numpy >= 1.2.0"
     ],
@@ -61,7 +61,7 @@
     },
     "job" : {
 	"id": "622a358619ab59012eabeefb",
-	"name": "medmnist"
+	"name": "mnist"
     },
     "registry": {
 	"sort": "dummy",
