@@ -13,8 +13,8 @@
             "groupBy": {
                 "type": "tag",
                 "value": [
-		    "default/us/west/org1",
-		    "default/uk/london/org2"
+		    "default/uk/london/org2",
+            "default/us/west/org1"
 				]
             },
             "name": "param-channel",
