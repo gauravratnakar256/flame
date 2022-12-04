@@ -63,6 +63,8 @@ class PyTorchMedMNistAggregator(TopAggregator):
         self.model = None
         self.dataset: Dataset = None # Not sure why we need this.
 
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         self.dataset_size = 0
 
         self.train_loader = None
