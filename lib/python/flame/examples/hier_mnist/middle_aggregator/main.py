@@ -20,6 +20,8 @@ import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
+import torchvision
 from flame.config import Config
 from flame.dataset import Dataset
 from flame.mode.horizontal.middle_aggregator import MiddleAggregator
@@ -73,7 +75,8 @@ class PyTorchMnistMiddleAggregator(MiddleAggregator):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model = Net().to(self.device)
+        #self.model = Net().to(self.device)
+        self.model = torchvision.models.resnet50()
 
     def load_data(self) -> None:
         """Load a test dataset."""
