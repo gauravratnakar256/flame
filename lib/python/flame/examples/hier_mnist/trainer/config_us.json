@@ -36,7 +36,7 @@
         "batchSize": 32,
         "learningRate": 0.01,
         "rounds": 5,
-        "epochs": 2
+        "epochs": 1
     },
     "baseModel": {
 	"name": "",
