@@ -101,6 +101,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 "supported ml framework not found; "
                 f"supported frameworks are: {valid_frameworks}")
 
+    def create_model_structure(self):
+        self.memory_manager.create_model_structure(self.model)
+
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
         if tag == TAG_AGGREGATE:
@@ -257,6 +260,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
             task_init = Tasklet(self.initialize)
 
+            task_create_model_structure = Tasklet(self.create_model_structure)
+
             task_load_data = Tasklet(self.load_data)
 
             task_put = Tasklet(self.put, TAG_DISTRIBUTE)
@@ -281,7 +286,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # create a loop object with loop exit condition function
         loop = Loop(loop_check_fn=lambda: self._work_done)
-        task_internal_init >> task_load_data >> task_init >> loop(
+        task_internal_init >> task_load_data >> task_init >> task_create_model_structure >> loop(
             task_put >> task_get >> task_train >> task_eval >> task_analysis >>
             task_save_metrics >> task_increment_round
         ) >> task_end_of_training >> task_save_params >> task_save_model

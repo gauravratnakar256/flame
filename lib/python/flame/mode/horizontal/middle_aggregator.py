@@ -71,6 +71,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.shm_dict_list = {}
         self.memory_manager = MemoryManager(task_id=self.task_id)
 
+    def create_model_structure(self):
+        self.memory_manager.create_model_structure(self.model)
+
 
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
@@ -212,6 +215,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
             task_init = Tasklet(self.initialize)
 
+            task_create_model_structure = Tasklet(self.create_model_structure)
+
             task_load_data = Tasklet(self.load_data)
 
             task_put_dist = Tasklet(self.put, TAG_DISTRIBUTE)
@@ -230,7 +235,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         # create a loop object with loop exit condition function
         loop = Loop(loop_check_fn=lambda: self._work_done)
-        task_internal_init >> task_load_data >> task_init >> loop(
+        task_internal_init >> task_load_data >> task_init >> task_create_model_structure >> loop(
             task_get_fetch >> task_put_dist >> task_get_aggr >> task_put_upload
             >> task_eval >> task_update_round) >> task_end_of_training
 
