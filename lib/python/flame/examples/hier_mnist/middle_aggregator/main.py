@@ -62,7 +62,8 @@ class PyTorchMedMNistAggregator(MiddleAggregator):
 
     def initialize(self):
         """Initialize."""
-        self.model = torchvision.models.resnet50()
+        #self.model = torchvision.models.resnet50()
+        self.model = CNN(num_classes=9)
 
     def load_data(self) -> None:
         """Load a test dataset."""
