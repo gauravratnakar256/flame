@@ -84,11 +84,9 @@ class Trainer(Role, metaclass=ABCMeta):
 
         # one aggregator is sufficient
         end = channel.one_end()
-
-        logger.info(end)
-
         msg = channel.recv(end)
 
+        logger.info(end)
         if MessageType.WEIGHTS in msg:
             self.weights = msg[MessageType.WEIGHTS]
             self._update_model()
