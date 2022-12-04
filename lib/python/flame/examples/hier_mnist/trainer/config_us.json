@@ -28,7 +28,7 @@
             }
         }
     ],
-    "dataset": "https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz",
+    "dataset": "https://raw.githubusercontent.com/gauravratnakar256/flamedatasets/main/medmnistdatasets/datasets/site132.npz",
     "dependencies": [
         "numpy >= 1.2.0"
     ],
