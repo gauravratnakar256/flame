@@ -73,10 +73,10 @@ class Trainer(Role, metaclass=ABCMeta):
             self._fetch_weights(tag)
 
     def _fetch_weights(self, tag: str) -> None:
-        logger.debug("calling _fetch_weights")
+        logger.info("calling _fetch_weights")
         channel = self.cm.get_by_tag(tag)
         if not channel:
-            logger.debug(f"[_fetch_weights] channel not found with tag {tag}")
+            logger.info(f"[_fetch_weights] channel not found with tag {tag}")
             return
 
         # this call waits for at least one peer joins this channel
@@ -96,7 +96,7 @@ class Trainer(Role, metaclass=ABCMeta):
         if MessageType.ROUND in msg:
             self._round = msg[MessageType.ROUND]
 
-        logger.debug(f"work_done: {self._work_done}, round: {self._round}")
+        logger.info(f"work_done: {self._work_done}, round: {self._round}")
 
     def put(self, tag: str) -> None:
         """Set data to remote role(s)."""
@@ -104,10 +104,10 @@ class Trainer(Role, metaclass=ABCMeta):
             self._send_weights(tag)
 
     def _send_weights(self, tag: str) -> None:
-        logger.debug("calling _send_weights")
+        logger.info("calling _send_weights")
         channel = self.cm.get_by_tag(tag)
         if not channel:
-            logger.debug(f"[_send_weights] channel not found with {tag}")
+            logger.info(f"[_send_weights] channel not found with {tag}")
             return
 
         # this call waits for at least one peer to join this channel
@@ -122,7 +122,7 @@ class Trainer(Role, metaclass=ABCMeta):
                 MessageType.WEIGHTS: self.weights,
                 MessageType.DATASET_SIZE: self.dataset_size
             })
-        logger.debug("sending weights done")
+        logger.info("sending weights done")
 
     def save_metrics(self):
         """Save metrics in a model registry."""
