@@ -85,7 +85,7 @@ class Trainer(Role, metaclass=ABCMeta):
         # one aggregator is sufficient
         end = channel.one_end()
 
-        print(end)
+        logger.info(end)
 
         msg = channel.recv(end)
 

@@ -1,10 +1,10 @@
 {
     "taskid": "49d06b7526964db86cf37c70e8e0cdb6bd7aa742",
-    "backend": "p2p",
+    "backend": "mqtt",
     "brokers": [
         {
-            "host": "localhost:10104",
-            "sort": "p2p"
+            "host": "broker.hivemq.com",
+            "sort": "mqtt"
         }
     ],
     "channels": [
@@ -27,15 +27,14 @@
             }
         }
     ],
-    "dataset": "https://raw.githubusercontent.com/gauravratnakar256/flamedatasets/main/medmnistdatasets/datasets/site101.npz",
+    "dataset": "https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz",
     "dependencies": [
         "numpy >= 1.2.0"
     ],
     "hyperparameters": {
         "batchSize": 32,
         "learningRate": 0.01,
-        "rounds": 5,
-        "epochs": 1
+        "rounds": 5
     },
     "baseModel": {
 	"name": "",
@@ -43,11 +42,11 @@
     },
     "job" : {
 	"id": "622a358619ab59012eabeefb",
-	"name": "medmnist"
+	"name": "mnist"
     },
     "registry": {
-	"sort": "dummy",
-	"uri": ""
+	"sort": "mlflow",
+	"uri": "http://flame-mlflow:5000"
     },
     "selector": {
 	"sort": "default",
