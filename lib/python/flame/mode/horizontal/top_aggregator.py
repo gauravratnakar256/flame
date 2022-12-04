@@ -150,15 +150,15 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 # save training result from trainer in a disk cache
                 self.cache[end] = tres
 
-        # optimizer conducts optimization (in this case, aggregation)
-        global_weights = self.optimizer.do(self.cache, total)
-        if global_weights is None:
-            logger.debug("failed model aggregation")
-            time.sleep(1)
-            return
+        # # optimizer conducts optimization (in this case, aggregation)
+        # global_weights = self.optimizer.do(self.cache, total)
+        # if global_weights is None:
+        #     logger.debug("failed model aggregation")
+        #     time.sleep(1)
+        #     return
 
-        # set global weights
-        self.weights = global_weights
+        # # set global weights
+        # self.weights = global_weights
 
         # update model with global weights
         self._update_model()
