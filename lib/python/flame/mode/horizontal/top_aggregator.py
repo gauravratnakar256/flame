@@ -121,7 +121,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
             if not msg:
-                logger.debug(f"No data from {end}; skipping it")
+                logger.info(f"No data from {end}; skipping it")
                 continue
             
             if end not in self.shm_dict_list:
@@ -129,7 +129,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 self.shm_dict_list[end] = temp_dict
             
 
-            logger.debug(f"received data from {end}")
+            logger.info(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
                 #logger.info(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
@@ -142,7 +142,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 count = msg[MessageType.DATASET_SIZE]
                 total += count
 
-            logger.debug(f"{end}'s parameters trained with {count} samples")
+            logger.info(f"{end}'s parameters trained with {count} samples")
 
             if weights is not None:
                 tres = TrainResult(weights, count)
@@ -152,7 +152,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
         if global_weights is None:
-            logger.debug("failed model aggregation")
+            logger.info("failed model aggregation")
             time.sleep(1)
             return
 
@@ -171,7 +171,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
     def _distribute_weights(self, tag: str) -> None:
         channel = self.cm.get_by_tag(tag)
         if not channel:
-            logger.debug(f"channel not found for tag {tag}")
+            logger.info(f"channel not found for tag {tag}")
             return
 
         # this call waits for at least one peer to join this channel
@@ -185,7 +185,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # send out global model parameters to trainers
         for end in channel.ends():
-            logger.debug(f"sending weights to {end}")
+            logger.info(f"sending weights to {end}")
             channel.send(end, {
                 MessageType.WEIGHTS: "Get Weights from agggregator",
                 MessageType.ROUND: self._round
