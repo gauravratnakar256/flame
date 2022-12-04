@@ -1,6 +1,7 @@
 import logging
 
 import torch
+import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -64,13 +65,14 @@ class PyTorchMnistTrainer(Trainer):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model = Net().to(self.device)
+        #self.model = Net().to(self.device)
+        self.model = torchvision.models.resnet50()
 
     def load_data(self) -> None:
         """Load data."""
         transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.1307, ), (0.3081, ))
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
 
         dataset = datasets.MNIST('./data',
