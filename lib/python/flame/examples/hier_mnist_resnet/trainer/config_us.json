@@ -3,7 +3,7 @@
     "backend": "mqtt",
     "brokers": [
         {
-            "host": "localhost",
+            "host": "broker.hivemq.com",
             "sort": "mqtt"
         }
     ],
