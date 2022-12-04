@@ -13,8 +13,8 @@
             "groupBy": {
                 "type": "tag",
                 "value": [
-		    "default/uk/london/org2",
-            "default/us/west/org1"
+		    "default/us/west/org1",
+		    "default/uk/london/org2"
 				]
             },
             "name": "param-channel",
@@ -28,14 +28,15 @@
             }
         }
     ],
-    "dataset": "https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz",
+    "dataset": "https://raw.githubusercontent.com/gauravratnakar256/flamedatasets/main/medmnistdatasets/datasets/site1.npzz",
     "dependencies": [
         "numpy >= 1.2.0"
     ],
     "hyperparameters": {
         "batchSize": 32,
         "learningRate": 0.01,
-        "rounds": 5
+        "rounds": 5,
+        "epochs": 1
     },
     "baseModel": {
 	"name": "",
@@ -43,7 +44,7 @@
     },
     "job" : {
 	"id": "622a358619ab59012eabeefb",
-	"name": "mnist"
+	"name": "medmnist"
     },
     "registry": {
 	"sort": "dummy",

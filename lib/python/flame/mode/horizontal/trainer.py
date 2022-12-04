@@ -84,6 +84,9 @@ class Trainer(Role, metaclass=ABCMeta):
 
         # one aggregator is sufficient
         end = channel.one_end()
+
+        print(end)
+
         msg = channel.recv(end)
 
         if MessageType.WEIGHTS in msg:
