@@ -63,6 +63,14 @@ class PyTorchMedMNistAggregator(TopAggregator):
         self.model = None
         self.dataset: Dataset = None # Not sure why we need this.
 
+        self.dataset_size = 0
+
+        self.train_loader = None
+        self.val_loader = None
+
+        self.epochs = self.config.hyperparameters['epochs']
+        self.batch_size = self.config.hyperparameters['batchSize']
+
     def initialize(self):
         """Initialize."""
         #self.model = torchvision.models.resnet50()
