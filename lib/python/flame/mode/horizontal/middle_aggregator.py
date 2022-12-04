@@ -187,7 +187,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.weights = global_weights
         self.dataset_size = total
 
-        self.memory_manager.copy_weights_to_shared_memory(global_weights)
+        #self.memory_manager.copy_weights_to_shared_memory(global_weights)
+        self._update_model()
 
 
     def _send_weights(self, tag: str) -> None:
