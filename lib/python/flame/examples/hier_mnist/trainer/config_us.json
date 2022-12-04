@@ -3,7 +3,7 @@
     "backend": "mqtt",
     "brokers": [
         {
-            "host": "localhost:1883",
+            "host": "localhost",
             "sort": "mqtt"
         }
     ],
