@@ -187,7 +187,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         for end in channel.ends():
             logger.info(f"sending weights to {end}")
             channel.send(end, {
-                MessageType.WEIGHTS: "Get Weights from agggregator",
+                MessageType.WEIGHTS: self.weights,
                 MessageType.ROUND: self._round
             })
 

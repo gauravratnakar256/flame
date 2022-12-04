@@ -128,6 +128,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         if MessageType.ROUND in msg:
             self._round = msg[MessageType.ROUND]
 
+        logger.info("calling _fetch_weights done")
+
     def _distribute_weights(self, tag: str) -> None:
         channel = self.cm.get_by_tag(tag)
         if not channel:
@@ -206,7 +208,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         channel.send(
             end, {
-                MessageType.WEIGHTS: "Fetch weights from middle aggregator",
+                MessageType.WEIGHTS: self.weights,
                 MessageType.DATASET_SIZE: self.dataset_size
             })
         logger.info("sending weights done")
