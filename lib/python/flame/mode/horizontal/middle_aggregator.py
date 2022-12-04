@@ -29,6 +29,7 @@ from ..composer import Composer
 from ..message import MessageType
 from ..role import Role
 from ..tasklet import Loop, Tasklet
+from ..memory_manager import MemoryManager
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,11 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         self.cache = Cache()
         self.dataset_size = 0
+
+        self.task_id = self.config.task_id
+        self.shm_dict_list = {}
+        self.memory_manager = MemoryManager(task_id=self.task_id)
+
 
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""

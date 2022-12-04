@@ -32,6 +32,7 @@ from ..composer import Composer
 from ..message import MessageType
 from ..role import Role
 from ..tasklet import Loop, Tasklet
+from ..memory_manager import MemoryManager
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +90,10 @@ class TopAggregator(Role, metaclass=ABCMeta):
         if 'rounds' in self.config.hyperparameters:
             self._rounds = self.config.hyperparameters['rounds']
         self._work_done = False
+
+        self.task_id = self.config.task_id
+        self.shm_dict_list = {}
+        self.memory_manager = MemoryManager(task_id=self.task_id)
 
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
