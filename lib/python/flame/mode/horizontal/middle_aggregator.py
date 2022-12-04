@@ -110,7 +110,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             self.shm_dict_list[end] = temp_dict
         logger.info(" After end of loop")
 
-        logger.log(self.weights)
+        #logger.info(self.weights)
 
         if MessageType.WEIGHTS in msg:
             self.weights = msg[MessageType.WEIGHTS]
@@ -130,7 +130,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # this call waits for at least one peer to join this channel
         channel.await_join()
 
-        #logger.log(self.weights)
+        logger.info(self.weights)
 
         for end in channel.ends():
             logger.info(f"sending weights to {end}")
