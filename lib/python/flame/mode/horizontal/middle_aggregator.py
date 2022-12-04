@@ -206,7 +206,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         channel.send(
             end, {
-                MessageType.WEIGHTS: self.weights,
+                MessageType.WEIGHTS: "Fetch weights from middle aggregator",
                 MessageType.DATASET_SIZE: self.dataset_size
             })
         logger.debug("sending weights done")
