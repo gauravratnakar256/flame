@@ -131,7 +131,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         for end in channel.ends():
             logger.info(f"sending weights to {end}")
             channel.send(end, {
-                MessageType.WEIGHTS: self.weights,
+                MessageType.WEIGHTS: "Weights from middle aggreator",
                 MessageType.ROUND: self._round
             })
 
