@@ -95,6 +95,7 @@ class MemoryManager():
             dst = np.ndarray(shape=self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
                             buffer=self.shm_dict[shared_mem_name].buf)
             src = torch.clone(weights[key]).detach().numpy()
+            print(self.model_structure[key]['dtype'])
             np.copyto(dst, src)
 
     def get_weights_from_shared_mem_self(self):
