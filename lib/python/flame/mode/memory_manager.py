@@ -33,7 +33,7 @@ class MemoryManager():
     def __create_structure(self, parameters, layer_name):
         for name, param in parameters:
              numpy_array = torch.clone(param).detach().numpy()
-             numpy_array_datatype = numpy_array.dtype
+             numpy_array_datatype = np.float32
              mem_size = int(numpy_array.nbytes)
              parameter_name =  layer_name + "." + name
              shared_mem_name = self.task_id + "." + layer_name + "." + name
@@ -95,8 +95,6 @@ class MemoryManager():
             dst = np.ndarray(shape=self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
                             buffer=self.shm_dict[shared_mem_name].buf)
             src = torch.clone(weights[key]).detach().numpy()
-            print("dst data type is {} {}".format(shared_mem_name, self.model_structure[key]['dtype']))
-            print("source data type is {}".format(src.dtype))
             np.copyto(dst, src)
 
     def get_weights_from_shared_mem_self(self):
