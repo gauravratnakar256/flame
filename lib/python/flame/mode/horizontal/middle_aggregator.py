@@ -128,10 +128,12 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # this call waits for at least one peer to join this channel
         channel.await_join()
 
+        logger.log(self.weights)
+
         for end in channel.ends():
             logger.info(f"sending weights to {end}")
             channel.send(end, {
-                MessageType.WEIGHTS: "Weights from middle aggreator",
+                MessageType.WEIGHTS: self.weights,
                 MessageType.ROUND: self._round
             })
 
