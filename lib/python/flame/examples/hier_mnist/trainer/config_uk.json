@@ -35,7 +35,8 @@
     "hyperparameters": {
         "batchSize": 32,
         "learningRate": 0.01,
-        "rounds": 5
+        "rounds": 5,
+        "epochs": 2
     },
     "baseModel": {
 	"name": "",
@@ -43,7 +44,7 @@
     },
     "job" : {
 	"id": "622a358619ab59012eabeefb",
-	"name": "mnist"
+	"name": "medmnist"
     },
     "registry": {
 	"sort": "dummy",

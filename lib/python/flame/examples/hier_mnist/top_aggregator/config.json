@@ -42,7 +42,7 @@
     },
     "job" : {
 	"id": "622a358619ab59012eabeefb",
-	"name": "mnist"
+	"name": "medmnist"
     },
     "registry": {
 	"sort": "dummy",
