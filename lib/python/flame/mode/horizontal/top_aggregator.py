@@ -107,13 +107,16 @@ class TopAggregator(Role, metaclass=ABCMeta):
             return
 
         total = 0
+
+        start = time.time()
+
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
             if not msg:
-                logger.info(f"No data from {end}; skipping it")
+                logger.debug(f"No data from {end}; skipping it")
                 continue
 
-            logger.info(f"received data from {end}")
+            logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
                 weights = msg[MessageType.WEIGHTS]
 
@@ -121,13 +124,18 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 count = msg[MessageType.DATASET_SIZE]
                 total += count
 
-            logger.info(f"{end}'s parameters trained with {count} samples")
+            logger.debug(f"{end}'s parameters trained with {count} samples")
 
             if weights is not None:
                 tres = TrainResult(weights, count)
                 # save training result from trainer in a disk cache
                 self.cache[end] = tres
 
+        end = time.time() - start
+
+        logger.info("Time to get weight from middle aggregator: {}".format(end))
+
+        start = time.time()
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
         if global_weights is None:
@@ -140,6 +148,10 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # update model with global weights
         self._update_model()
+
+        end = time.time() - start
+
+        logger.info("Time to aggregate weights: {}".format(end))
 
     def put(self, tag: str) -> None:
         """Set data to remote role(s)."""
@@ -156,16 +168,22 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # this call waits for at least one peer to join this channel
         channel.await_join()
 
+        start = time.time()
+
         # before distributing weights, update it from global model
         self._update_weights()
 
         # send out global model parameters to trainers
         for end in channel.ends():
-            logger.info(f"sending weights to {end}")
+            logger.debug(f"sending weights to {end}")
             channel.send(end, {
                 MessageType.WEIGHTS: self.weights,
                 MessageType.ROUND: self._round
             })
+
+        end = time.time() - start
+
+        logger.info("Time taken to send model to middle aggregator: {}".format(end))
 
     def inform_end_of_training(self) -> None:
         """Inform all the trainers that the training is finished."""

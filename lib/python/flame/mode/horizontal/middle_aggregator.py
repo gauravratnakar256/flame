@@ -93,10 +93,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             self._distribute_weights(tag)
 
     def _fetch_weights(self, tag: str) -> None:
-        logger.info("calling _fetch_weights")
+        logger.debug("calling _fetch_weights")
         channel = self.cm.get_by_tag(tag)
         if not channel:
-            logger.info(f"[_fetch_weights] channel not found with tag {tag}")
+            logger.debug(f"[_fetch_weights] channel not found with tag {tag}")
             return
 
         # this call waits for at least one peer to join this channel
@@ -104,6 +104,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         # one aggregator is sufficient
         end = channel.one_end()
+
+        start = time.time()
+
         msg = channel.recv(end)
 
         if MessageType.WEIGHTS in msg:
@@ -114,6 +117,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         if MessageType.ROUND in msg:
             self._round = msg[MessageType.ROUND]
+
+        end = time.time() - start
+
+        logger.info("Time taken to get weights from top aggregator: {}".format(end))
 
     def _distribute_weights(self, tag: str) -> None:
         # channel = self.cm.get_by_tag(tag)
@@ -142,7 +149,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # if not channel:
         #     return
 
-        total = 0
+        total = 1800
         # receive local model parameters from trainers
         # for end, msg in channel.recv_fifo(channel.ends()):
         #     if not msg:
@@ -162,12 +169,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         #     # save training result from trainer in a disk cache
         #     self.cache[end] = tres
 
-        tres = TrainResult(self.dummy_weight1, 900)
-        self.cache[1] = tres
-        tres = TrainResult(self.dummy_weight2, 900)
-        self.cache[2] = tres
+        self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa745"] = TrainResult(self.dummy_weight1, 900)
+        self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa746"] = TrainResult(self.dummy_weight2, 900)
 
-        total = 1800
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
         if global_weights is None:
@@ -178,6 +182,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # set global weights
         self.weights = global_weights
         self.dataset_size = total
+
+        time.sleep(3)
 
     def _send_weights(self, tag: str) -> None:
         logger.debug("calling _send_weights")
@@ -192,12 +198,19 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # one aggregator is sufficient
         end = channel.one_end()
 
+        start = time.time()
+
         channel.send(
             end, {
                 MessageType.WEIGHTS: self.weights,
                 MessageType.DATASET_SIZE: self.dataset_size
             })
-        logger.info("sending weights done")
+
+        end = time.time() - start
+
+        logger.info("Time taken to send weights to top aggregator: {}".format(end))
+
+        logger.debug("sending weights done")
 
     def update_round(self):
         """Update the round counter."""
