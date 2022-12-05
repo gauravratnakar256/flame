@@ -126,7 +126,7 @@ class PyTorchMedMNistAggregator(TopAggregator):
 
     def evaluate(self) -> None:
         """Evaluate a model."""
-        logger.info("Started Evaluating of Model")
+        logger.debug("Started Evaluating of Model")
         self.model.eval()
         # loss_lst = list()
         # labels = torch.tensor([],device=self.device)
@@ -149,8 +149,8 @@ class PyTorchMedMNistAggregator(TopAggregator):
 
         val_loss = 12
         self.update_metrics({"Val Loss": val_loss, "Val Accuracy": val_acc})
-        logger.info(f"Test Loss: {val_loss}")
-        logger.info(f"Test Accuracy: {val_acc}")
+        logger.debug(f"Test Loss: {val_loss}")
+        logger.debug(f"Test Accuracy: {val_acc}")
 
 if __name__ == "__main__":
     import argparse
