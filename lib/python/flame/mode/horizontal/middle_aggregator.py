@@ -104,16 +104,17 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             self.dist_tag = tag
             self._distribute_weights(tag)
 
-    def weights_init_uniform(self, m):
-        classname = m.__class__.__name__
-        if classname.find('Linear') != -1:
-            m.weight.data.uniform_(0.0, 1.0)
-            m.bias.data.fill_(0)
-        elif classname.find('Conv') != -1:
-            m.weight.data.normal_(0.0, 0.5)
-        elif classname.find('BatchNorm') != -1:
-            m.weight.data.normal_(1.0, 0.02)
-            m.bias.data.fill_(0)
+    def initialize_weights(self, m):
+        if isinstance(m, torch.nn.Conv2d):
+            torch.nn.init.kaiming_uniform_(m.weight.data,nonlinearity='relu')
+            if m.bias is not None:
+                torch.nn.init.constant_(m.bias.data, 0)
+        elif isinstance(m, torch.nn.BatchNorm2d):
+            torch.nn.init.constant_(m.weight.data, 1)
+            torch.nn.init.constant_(m.bias.data, 0)
+        elif isinstance(m, torch.nn.Linear):
+            torch.nn.init.kaiming_uniform_(m.weight.data)
+            torch.nn.init.constant_(m.bias.data, 0)
 
     def _fetch_weights(self, tag: str) -> None:
         logger.info("calling _fetch_weights")
@@ -165,9 +166,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         #         MessageType.ROUND: self._round
         #     })
 
-        self.model.apply(self.weights_init_uniform)
+        self.model.apply(self.initialize_weights)
         self.dummy_weight1 =  self.model.state_dict()
-        self.model.apply(self.weights_init_uniform)
+        self.model.apply(self.initialize_weights)
         self.dummy_weight2 =  self.model.state_dict()
         time.sleep(3)
 
