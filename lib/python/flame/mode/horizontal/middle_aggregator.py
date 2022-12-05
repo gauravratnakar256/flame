@@ -86,8 +86,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
                 f"supported frameworks are: {valid_frameworks}")
         
     def create_model_structure(self):
-        self.model.to(torch.float)
         self.memory_manager.create_model_structure(self.model)
+        self.weights = self.model.state_dict()
 
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
