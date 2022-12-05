@@ -182,7 +182,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         channel.await_join()
 
         # before distributing weights, update it from global model
-        self._update_weights()
+        #self._update_weights()
 
         # send out global model parameters to trainers
         for end in channel.ends():
