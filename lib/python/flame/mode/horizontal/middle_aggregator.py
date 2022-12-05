@@ -198,7 +198,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         #     # save training result from trainer in a disk cache
         #     self.cache[end] = tres
 
-        print(self.dummy_weight1)
+        #print(self.dummy_weight1)
 
         tres = TrainResult(self.dummy_weight1, 900)
         self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa745"] = tres
@@ -206,10 +206,11 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa746"] = tres
 
         total = 1800
+        logger.info("Total is {}".format(total))
+        logger.info("cache length is {}".format(len(self.cache)))
 
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
-        logger.info("Total is {}".format(total))
         if global_weights is None:
             logger.info("failed model aggregation")
             time.sleep(1)
