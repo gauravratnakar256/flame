@@ -23,6 +23,7 @@ from flame.dataset import Dataset # Not sure why we need this.
 from flame.mode.horizontal.middle_aggregator import MiddleAggregator
 import torch
 import torchvision
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -64,6 +65,7 @@ class PyTorchMedMNistAggregator(MiddleAggregator):
         """Initialize."""
         #self.model = torchvision.models.resnet50()
         self.model = torchvision.models.resnet152()
+        time.sleep(30)
         #self.model = CNN(num_classes=9)
 
     def load_data(self) -> None:
