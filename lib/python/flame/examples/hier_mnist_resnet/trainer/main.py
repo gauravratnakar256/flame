@@ -76,7 +76,6 @@ class PyTorchMedMNistTrainer(Trainer):
 
         self.model = torchvision.models.resnet50()
         #self.model = CNN(num_classes=9)
-        #self.model = torchvision.models.mobilenet_v2()
         self.moptimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3, weight_decay=1e-5)
         self.criterion = torch.nn.CrossEntropyLoss()
 
