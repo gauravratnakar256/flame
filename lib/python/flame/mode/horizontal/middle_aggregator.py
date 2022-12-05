@@ -199,6 +199,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         tres = TrainResult(self.dummy_weight2, 900)
         self.cache[2] = tres
 
+        total = 1800
+
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
         if global_weights is None:
