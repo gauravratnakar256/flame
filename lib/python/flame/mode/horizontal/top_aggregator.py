@@ -106,6 +106,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
     def create_model_structure(self):
         self.memory_manager.create_model_structure(self.model)
+        #Load Parameters to shared memory
+        self.memory_manager.load_parameters_to_shared_memory(self.model)
  
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
@@ -159,6 +161,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # set global weights
         self.weights = global_weights
 
+        self.memory_manager.copy_weights_to_shared_memory(global_weights)
+
         # update model with global weights
         self._update_model()
 
@@ -180,14 +184,11 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # before distributing weights, update it from global model
         self._update_weights()
 
-        #Load Parameters to shared memory
-        self.memory_manager.load_parameters_to_shared_memory(self.model)
-
         # send out global model parameters to trainers
         for end in channel.ends():
             logger.info(f"sending weights to {end}")
             channel.send(end, {
-                MessageType.WEIGHTS: "Fetch weights from top aggregator",
+                MessageType.WEIGHTS: self.weights,
                 MessageType.ROUND: self._round
             })
 

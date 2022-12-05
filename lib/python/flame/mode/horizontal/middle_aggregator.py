@@ -134,6 +134,11 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         if MessageType.WEIGHTS in msg:
             self.weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
+            if msg[MessageType.WEIGHTS].__str__() == self.weights.__str__():
+                    logger.info("Two Dicts are same")
+            else:
+                    logger.info("Two Dicts are different")
+
             self._update_model()
 
         if MessageType.EOT in msg:

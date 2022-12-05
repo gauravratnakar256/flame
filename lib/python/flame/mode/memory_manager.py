@@ -81,4 +81,12 @@ class MemoryManager():
             self.shm_dict[key].close()
             self.shm_dict[key].unlink()
 
+    def copy_weights_to_shared_memory(self, weights):
+        for key in weights.keys():
+            shared_mem_name = self.task_id + "." + key
+            dst = np.ndarray(shape=self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
+                            buffer=self.shm_dict[shared_mem_name].buf)
+            src = torch.clone(weights[key]).detach().numpy()
+            np.copyto(dst, src)
+
     
