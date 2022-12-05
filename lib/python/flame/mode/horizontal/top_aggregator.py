@@ -134,7 +134,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
             logger.info(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
-                #logger.info(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
+                logger.info(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
                 # if msg[MessageType.WEIGHTS].__str__() == weights.__str__():
                 #     logger.info("Two Dicts are same")
@@ -148,6 +148,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             logger.info(f"{end}'s parameters trained with {count} samples")
 
             if weights is not None:
+                logger.info("Count is {}".format(count))
                 tres = TrainResult(weights, count)
                 # save training result from trainer in a disk cache
                 self.cache[end] = tres
