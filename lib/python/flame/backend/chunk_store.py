@@ -23,7 +23,7 @@ from ..common.constants import EMPTY_PAYLOAD
 from ..common.util import run_async
 from ..proto import backend_msg_pb2 as msg_pb2
 
-DEFAULT_CHUNK_SIZE = 1048576  # 1MB
+DEFAULT_CHUNK_SIZE = 10485760  # 1MB
 
 logger = logging.getLogger(__name__)
 
