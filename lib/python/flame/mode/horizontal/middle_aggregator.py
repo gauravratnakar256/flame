@@ -198,6 +198,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         #     # save training result from trainer in a disk cache
         #     self.cache[end] = tres
 
+        print(self.dummy_weight1)
+
         tres = TrainResult(self.dummy_weight1, 900)
         self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa745"] = tres
         tres = TrainResult(self.dummy_weight2, 900)
@@ -239,8 +241,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.memory_manager.load_parameters_to_shared_memory(self.model)
 
         #self._update_weights()
-
-        logger.info()
 
         channel.send(
             end, {
