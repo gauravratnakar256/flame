@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
     config = Config(args.config)
 
-    time.sleep(60)
+    #time.sleep(60)
 
     t = PyTorchMedMNistTrainer(config)
     t.compose()
