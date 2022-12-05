@@ -76,6 +76,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         self.memory_manager = MemoryManager(task_id=self.task_id)
 
+        self.dummy_weight1 = {}
+        self.dummy_weight2 = {}
+
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
             raise NotImplementedError(
@@ -99,6 +102,17 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         if tag == TAG_DISTRIBUTE:
             self.dist_tag = tag
             self._distribute_weights(tag)
+
+    def weights_init_uniform(self):
+        classname = self.model.__class__.__name__
+        if classname.find('Linear') != -1:
+            self.model.weight.data.uniform_(0.0, 1.0)
+            self.model.bias.data.fill_(0)
+        elif classname.find('Conv') != -1:
+            self.model.weight.data.normal_(0.0, 0.5)
+        elif classname.find('BatchNorm') != -1:
+            self.model.weight.data.normal_(1.0, 0.02)
+            self.model.bias.data.fill_(0)
 
     def _fetch_weights(self, tag: str) -> None:
         logger.info("calling _fetch_weights")
@@ -131,49 +145,59 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         logger.info("calling _fetch_weights done")
 
     def _distribute_weights(self, tag: str) -> None:
-        channel = self.cm.get_by_tag(tag)
-        if not channel:
-            logger.info(f"channel not found for tag {tag}")
-            return
+        # channel = self.cm.get_by_tag(tag)
+        # if not channel:
+        #     logger.info(f"channel not found for tag {tag}")
+        #     return
 
-        # this call waits for at least one peer to join this channel
-        channel.await_join()
+        # # this call waits for at least one peer to join this channel
+        # channel.await_join()
 
-        self._update_weights()
+        # self._update_weights()
 
-        #self.load_parameters_to_shared_memory()
+        # #self.load_parameters_to_shared_memory()
 
-        for end in channel.ends():
-            logger.debug(f"sending weights to {end}")
-            channel.send(end, {
-                MessageType.WEIGHTS: self.weights,
-                MessageType.ROUND: self._round
-            })
+        # for end in channel.ends():
+        #     logger.debug(f"sending weights to {end}")
+        #     channel.send(end, {
+        #         MessageType.WEIGHTS: self.weights,
+        #         MessageType.ROUND: self._round
+        #     })
+
+        self.weights_init_uniform()
+        self.dummy_weight1 =  self.model.state_dict()
+        self.weights_init_uniform()
+        self.dummy_weight2 =  self.model.state_dict()
 
     def _aggregate_weights(self, tag: str) -> None:
-        channel = self.cm.get_by_tag(tag)
-        if not channel:
-            return
+        # channel = self.cm.get_by_tag(tag)
+        # if not channel:
+        #     return
 
         total = 0
         # receive local model parameters from trainers
-        for end, msg in channel.recv_fifo(channel.ends()):
-            if not msg:
-                logger.info(f"No data from {end}; skipping it")
-                continue
+        # for end, msg in channel.recv_fifo(channel.ends()):
+        #     if not msg:
+        #         logger.info(f"No data from {end}; skipping it")
+        #         continue
 
-            if MessageType.WEIGHTS in msg:
-                weights = msg[MessageType.WEIGHTS]
+        #     if MessageType.WEIGHTS in msg:
+        #         weights = msg[MessageType.WEIGHTS]
 
-            if MessageType.DATASET_SIZE in msg:
-                count = msg[MessageType.DATASET_SIZE]
-                total += count
+        #     if MessageType.DATASET_SIZE in msg:
+        #         count = msg[MessageType.DATASET_SIZE]
+        #         total += count
 
-            logger.info(f"{end}'s parameters trained with {count} samples")
+        #     logger.info(f"{end}'s parameters trained with {count} samples")
 
-            tres = TrainResult(weights, count)
-            # save training result from trainer in a disk cache
-            self.cache[end] = tres
+        #     tres = TrainResult(weights, count)
+        #     # save training result from trainer in a disk cache
+        #     self.cache[end] = tres
+
+        tres = TrainResult(self.dummy_weight1, 900)
+        self.cache[1] = tres
+        tres = TrainResult(self.dummy_weight2, 900)
+        self.cache[2] = tres
 
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
