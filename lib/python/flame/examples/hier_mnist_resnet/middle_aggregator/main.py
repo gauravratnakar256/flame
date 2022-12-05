@@ -63,8 +63,8 @@ class PyTorchMedMNistAggregator(MiddleAggregator):
 
     def initialize(self):
         """Initialize."""
-        #self.model = torchvision.models.resnet50()
-        self.model = torchvision.models.resnet152()
+        self.model = torchvision.models.resnet50()
+        #self.model = torchvision.models.resnet152()
         time.sleep(30)
         #self.model = CNN(num_classes=9)
 
