@@ -178,7 +178,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # if not channel:
         #     return
 
-        total = 0
+        total = 1800
         # receive local model parameters from trainers
         # for end, msg in channel.recv_fifo(channel.ends()):
         #     if not msg:
@@ -200,14 +200,12 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         #print(self.dummy_weight1)
 
-        tres = TrainResult(self.dummy_weight1, 900)
-        self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa745"] = tres
-        tres = TrainResult(self.dummy_weight2, 900)
-        self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa746"] = tres
+        self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa745"] = TrainResult(self.dummy_weight1, 900)
+        self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa746"] = TrainResult(self.dummy_weight2, 900)
 
-        total = 1800
-        logger.info("Total is {}".format(total))
         logger.info("cache length is {}".format(len(self.cache)))
+        logger.info("Total is {}".format(total))
+        
 
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
