@@ -451,12 +451,10 @@ class MqttBackend(AbstractBackend):
                                          payload,
                                          qos=MqttQoS.EXACTLY_ONCE)
 
-        time.sleep(10)
-
-        # while not info.is_published():
-        #     logger.debug(f"waiting for publish completion: rc = {info.rc}")
-        #     retval = self._mqtt_client.loop(MQTT_LOOP_CHECK_PERIOD)
-        #     logger.debug(f"retval from loop = {retval}")
+        while not info.is_published():
+            logger.debug(f"waiting for publish completion: rc = {info.rc}")
+            retval = self._mqtt_client.loop(MQTT_LOOP_CHECK_PERIOD)
+            logger.debug(f"retval from loop = {retval}")
 
         logger.debug(f'sending chunk {seqno} to {topic} is done')
 
