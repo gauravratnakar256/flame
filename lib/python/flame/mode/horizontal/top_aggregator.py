@@ -108,6 +108,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.memory_manager.create_model_structure(self.model)
         #Load Parameters to shared memory
         self.memory_manager.load_parameters_to_shared_memory(self.model)
+        self.weights =  self.model.state_dict()
  
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
