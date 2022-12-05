@@ -128,6 +128,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         # one aggregator is sufficient
         end = channel.one_end()
+
+        start = time.time()
+
         msg = channel.recv(end)
 
         if not end in self.shm_dict_list:
@@ -136,13 +139,17 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         if MessageType.WEIGHTS in msg:
             self.weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
-            self._update_model()
+            #self._update_model()
 
         if MessageType.EOT in msg:
             self._work_done = msg[MessageType.EOT]
 
         if MessageType.ROUND in msg:
             self._round = msg[MessageType.ROUND]
+
+        end = time.time() - start
+
+        logger.info("Time taken to get weights from top aggregator: {}".format(end))
 
         logger.info("calling _fetch_weights done")
 
@@ -219,7 +226,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.weights = global_weights
         self.dataset_size = total
 
-        self._update_model()
+        #self._update_model()
 
         time.sleep(3)
 
@@ -237,15 +244,22 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # one aggregator is sufficient
         end = channel.one_end()
 
-        self.memory_manager.load_parameters_to_shared_memory(self.model)
-
         #self._update_weights()
+
+        start = time.time()
+
+        self.memory_manager.copy_weights_to_shared_memory(self.weights)
 
         channel.send(
             end, {
                 MessageType.WEIGHTS: "Fetch weight from middle aggregator",
                 MessageType.DATASET_SIZE: self.dataset_size
             })
+
+        end = time.time() - start
+
+        logger.info("Time taken to send weights to top aggregator: {}".format(end))
+
         logger.info("sending weights done")
 
     def update_round(self):

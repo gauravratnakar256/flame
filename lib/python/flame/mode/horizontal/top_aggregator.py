@@ -121,38 +121,40 @@ class TopAggregator(Role, metaclass=ABCMeta):
             return
 
         total = 0
+
+        start = time.time()
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
             if not msg:
-                logger.info(f"No data from {end}; skipping it")
+                logger.debug(f"No data from {end}; skipping it")
                 continue
             
             if end not in self.shm_dict_list:
                 temp_dict = self.memory_manager.add_shm_refrence(end)
                 self.shm_dict_list[end] = temp_dict
             
-
-            logger.info(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
-                logger.info(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
+                logger.debug(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
-                # if msg[MessageType.WEIGHTS].__str__() == weights.__str__():
-                #     logger.info("Two Dicts are same")
-                # else:
-                #     logger.info("Two Dicts are different")
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
                 total += count
 
-            logger.info(f"{end}'s parameters trained with {count} samples")
+            logger.debug(f"{end}'s parameters trained with {count} samples")
 
             if weights is not None:
-                logger.info("Count is {}".format(count))
+                logger.debug("Count is {}".format(count))
                 tres = TrainResult(weights, count)
                 # save training result from trainer in a disk cache
                 self.cache[end] = tres
 
+        end = time.time() - start
+
+        logger.info("Time to get weight from middle aggregator: {}".format(end))
+
+        
+        start = time.time()
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
         if global_weights is None:
@@ -161,9 +163,11 @@ class TopAggregator(Role, metaclass=ABCMeta):
             return
 
         # set global weights
-        #self.weights = global_weights
+        self.weights = global_weights
 
-        self.memory_manager.copy_weights_to_shared_memory(global_weights)
+        end = time.time() - start
+
+        logger.info("Time to aggregate weights: {}".format(end))
 
         # update model with global weights
         #self._update_model()
@@ -185,14 +189,22 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # before distributing weights, update it from global model
         #self._update_weights()
+        
+        start = time.time()
+
+        self.memory_manager.copy_weights_to_shared_memory(self.weights)
 
         # send out global model parameters to trainers
         for end in channel.ends():
-            logger.info(f"sending weights to {end}")
+            #logger.info(f"sending weights to {end}")
             channel.send(end, {
                 MessageType.WEIGHTS: "Fetch weights from aggregator",
                 MessageType.ROUND: self._round
             })
+
+        end = time.time() - start
+
+        logger.info("Time taken to send model to middle aggregator: {}".format(end))
 
     def inform_end_of_training(self) -> None:
         """Inform all the trainers that the training is finished."""
