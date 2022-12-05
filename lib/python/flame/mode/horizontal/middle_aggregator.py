@@ -166,6 +166,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         #         MessageType.ROUND: self._round
         #     })
 
+        logger.info("Inside distribute weight function")
         self.model.apply(self.initialize_weights)
         self.dummy_weight1 =  self.model.state_dict()
         self.model.apply(self.initialize_weights)
@@ -198,14 +199,15 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         #     self.cache[end] = tres
 
         tres = TrainResult(self.dummy_weight1, 900)
-        self.cache[1] = tres
+        self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa745"] = tres
         tres = TrainResult(self.dummy_weight2, 900)
-        self.cache[2] = tres
+        self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa746"] = tres
 
         total = 1800
 
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
+        logger.info("Total is {}".format(total))
         if global_weights is None:
             logger.info("failed model aggregation")
             time.sleep(1)
@@ -237,6 +239,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.memory_manager.load_parameters_to_shared_memory(self.model)
 
         #self._update_weights()
+
+        logger.info()
 
         channel.send(
             end, {
