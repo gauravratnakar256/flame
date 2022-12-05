@@ -66,6 +66,17 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.cache = Cache()
         self.dataset_size = 0
 
+    def weights_init_uniform(self):
+        classname = self.model.__class__.__name__
+        if classname.find('Linear') != -1:
+            self.model.weight.data.uniform_(0.0, 1.0)
+            self.model.bias.data.fill_(0)
+        elif classname.find('Conv') != -1:
+            self.model.weight.data.normal_(0.0, 0.5)
+        elif classname.find('BatchNorm') != -1:
+            self.model.weight.data.normal_(1.0, 0.02)
+            self.model.bias.data.fill_(0)
+
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
         if tag == TAG_FETCH:
@@ -105,46 +116,58 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             self._round = msg[MessageType.ROUND]
 
     def _distribute_weights(self, tag: str) -> None:
-        channel = self.cm.get_by_tag(tag)
-        if not channel:
-            logger.info(f"channel not found for tag {tag}")
-            return
+        # channel = self.cm.get_by_tag(tag)
+        # if not channel:
+        #     logger.info(f"channel not found for tag {tag}")
+        #     return
 
-        # this call waits for at least one peer to join this channel
-        channel.await_join()
+        # # this call waits for at least one peer to join this channel
+        # channel.await_join()
 
-        for end in channel.ends():
-            logger.info(f"sending weights to {end}")
-            channel.send(end, {
-                MessageType.WEIGHTS: self.weights,
-                MessageType.ROUND: self._round
-            })
+        # for end in channel.ends():
+        #     logger.info(f"sending weights to {end}")
+        #     channel.send(end, {
+        #         MessageType.WEIGHTS: self.weights,
+        #         MessageType.ROUND: self._round
+        #     })
+
+        self.weights_init_uniform()
+        self.dummy_weight1 =  self.model.state_dict()
+        self.weights_init_uniform()
+        self.dummy_weight2 =  self.model.state_dict()
+        time.sleep(3)
 
     def _aggregate_weights(self, tag: str) -> None:
-        channel = self.cm.get_by_tag(tag)
-        if not channel:
-            return
+        # channel = self.cm.get_by_tag(tag)
+        # if not channel:
+        #     return
 
         total = 0
         # receive local model parameters from trainers
-        for end, msg in channel.recv_fifo(channel.ends()):
-            if not msg:
-                logger.info(f"No data from {end}; skipping it")
-                continue
+        # for end, msg in channel.recv_fifo(channel.ends()):
+        #     if not msg:
+        #         logger.info(f"No data from {end}; skipping it")
+        #         continue
 
-            if MessageType.WEIGHTS in msg:
-                weights = msg[MessageType.WEIGHTS]
+        #     if MessageType.WEIGHTS in msg:
+        #         weights = msg[MessageType.WEIGHTS]
 
-            if MessageType.DATASET_SIZE in msg:
-                count = msg[MessageType.DATASET_SIZE]
-                total += count
+        #     if MessageType.DATASET_SIZE in msg:
+        #         count = msg[MessageType.DATASET_SIZE]
+        #         total += count
 
-            logger.info(f"{end}'s parameters trained with {count} samples")
+        #     logger.info(f"{end}'s parameters trained with {count} samples")
 
-            tres = TrainResult(weights, count)
-            # save training result from trainer in a disk cache
-            self.cache[end] = tres
+        #     tres = TrainResult(weights, count)
+        #     # save training result from trainer in a disk cache
+        #     self.cache[end] = tres
 
+        tres = TrainResult(self.dummy_weight1, 900)
+        self.cache[1] = tres
+        tres = TrainResult(self.dummy_weight2, 900)
+        self.cache[2] = tres
+
+        total = 1800
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
         if global_weights is None:
