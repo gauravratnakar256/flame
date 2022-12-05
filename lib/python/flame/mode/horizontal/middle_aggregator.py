@@ -104,16 +104,16 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             self.dist_tag = tag
             self._distribute_weights(tag)
 
-    def weights_init_uniform(self):
-        classname = self.model.__class__.__name__
+    def weights_init_uniform(self, m):
+        classname = m.__class__.__name__
         if classname.find('Linear') != -1:
-            self.model.weight.data.uniform_(0.0, 1.0)
-            self.model.bias.data.fill_(0)
+            m.weight.data.uniform_(0.0, 1.0)
+            m.bias.data.fill_(0)
         elif classname.find('Conv') != -1:
-            self.model.weight.data.normal_(0.0, 0.5)
+            m.weight.data.normal_(0.0, 0.5)
         elif classname.find('BatchNorm') != -1:
-            self.model.weight.data.normal_(1.0, 0.02)
-            self.model.bias.data.fill_(0)
+            m.weight.data.normal_(1.0, 0.02)
+            m.bias.data.fill_(0)
 
     def _fetch_weights(self, tag: str) -> None:
         logger.info("calling _fetch_weights")
@@ -165,9 +165,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         #         MessageType.ROUND: self._round
         #     })
 
-        self.weights_init_uniform()
+        self.model.apply(self.weights_init_uniform)
         self.dummy_weight1 =  self.model.state_dict()
-        self.weights_init_uniform()
+        self.model.apply(self.weights_init_uniform)
         self.dummy_weight2 =  self.model.state_dict()
         time.sleep(3)
 
