@@ -445,7 +445,6 @@ class MqttBackend(AbstractBackend):
 
         any = Any()
         any.Pack(msg)
-        logger.info(any)
         payload = any.SerializeToString()
 
         info = self._mqtt_client.publish(topic,
