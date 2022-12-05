@@ -33,8 +33,8 @@ class MemoryManager():
     def create_structure(self, parameters, layer_name):
         for name, param in parameters:
              numpy_array = torch.clone(param).detach().numpy()
-             numpy_array_datatype = numpy_array.dtype
-             #numpy_array_datatype = np.float32
+             #numpy_array_datatype = numpy_array.dtype
+             numpy_array_datatype = np.float32
              mem_size = int(numpy_array.nbytes)
              parameter_name =  layer_name + "." + name
              shared_mem_name = self.task_id + "." + layer_name + "." + name
