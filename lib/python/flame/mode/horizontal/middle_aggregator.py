@@ -169,6 +169,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.dummy_weight1 =  self.model.state_dict()
         self.weights_init_uniform()
         self.dummy_weight2 =  self.model.state_dict()
+        time.sleep(3)
 
     def _aggregate_weights(self, tag: str) -> None:
         # channel = self.cm.get_by_tag(tag)
@@ -209,11 +210,14 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             time.sleep(1)
             return
 
+
         # set global weights
         self.weights = global_weights
         self.dataset_size = total
 
         self._update_model()
+
+        time.sleep(3)
 
 
     def _send_weights(self, tag: str) -> None:
