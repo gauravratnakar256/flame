@@ -23,6 +23,7 @@ from flame.dataset import Dataset # Not sure why we need this.
 from flame.mode.horizontal.middle_aggregator import MiddleAggregator
 import torch
 import torchvision
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -89,6 +90,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config = Config(args.config)
+
+    time.sleep(60)
 
     a = PyTorchMedMNistAggregator(config)
     a.compose()

@@ -25,6 +25,7 @@ from flame.mode.horizontal.trainer import Trainer
 import torch
 import torchvision
 import medmnist
+import time
 from medmnist import INFO
 from sklearn.metrics import accuracy_score
 
@@ -189,6 +190,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config = Config(args.config)
+
+    time.sleep(60)
 
     t = PyTorchMedMNistTrainer(config)
     t.compose()
