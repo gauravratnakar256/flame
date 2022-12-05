@@ -117,10 +117,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             torch.nn.init.constant_(m.bias.data, 0)
 
     def _fetch_weights(self, tag: str) -> None:
-        logger.info("calling _fetch_weights")
+        logger.debug("calling _fetch_weights")
         channel = self.cm.get_by_tag(tag)
         if not channel:
-            logger.info(f"[_fetch_weights] channel not found with tag {tag}")
+            logger.debug(f"[_fetch_weights] channel not found with tag {tag}")
             return
 
         # this call waits for at least one peer to join this channel
@@ -151,7 +151,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         logger.info("Time taken to get weights from top aggregator: {}".format(end))
 
-        logger.info("calling _fetch_weights done")
+        logger.debug("calling _fetch_weights done")
 
     def _distribute_weights(self, tag: str) -> None:
         # channel = self.cm.get_by_tag(tag)
@@ -173,7 +173,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         #         MessageType.ROUND: self._round
         #     })
 
-        logger.info("Inside distribute weight function")
+        logger.debug("Inside distribute weight function")
         self.model.apply(self.initialize_weights)
         self.dummy_weight1 =  self.model.state_dict()
         self.model.apply(self.initialize_weights)
@@ -210,8 +210,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa745"] = TrainResult(self.dummy_weight1, 900)
         self.cache["49d06b7526964db86cf37c70e8e0cdb6bd7aa746"] = TrainResult(self.dummy_weight2, 900)
 
-        logger.info("cache length is {}".format(len(self.cache)))
-        logger.info("Total is {}".format(total))
+        logger.debug("cache length is {}".format(len(self.cache)))
+        logger.debug("Total is {}".format(total))
         
 
         # optimizer conducts optimization (in this case, aggregation)
@@ -232,10 +232,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
 
     def _send_weights(self, tag: str) -> None:
-        logger.info("calling _send_weights")
+        logger.debug("calling _send_weights")
         channel = self.cm.get_by_tag(tag)
         if not channel:
-            logger.info(f"[_send_weights] channel not found with {tag}")
+            logger.debug(f"[_send_weights] channel not found with {tag}")
             return
 
         # this call waits for at least one peer to join this channel
@@ -260,15 +260,15 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         logger.info("Time taken to send weights to top aggregator: {}".format(end))
 
-        logger.info("sending weights done")
+        logger.debug("sending weights done")
 
     def update_round(self):
         """Update the round counter."""
-        logger.info(f"Update current round: {self._round}")
+        logger.debug(f"Update current round: {self._round}")
 
         channel = self.cm.get_by_tag(self.dist_tag)
         if not channel:
-            logger.info(f"channel not found for tag {self.dist_tag}")
+            logger.debug(f"channel not found for tag {self.dist_tag}")
             return
 
         # set necessary properties to help channel decide how to select ends
