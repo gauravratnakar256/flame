@@ -121,7 +121,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
                 weights = msg[MessageType.WEIGHTS]
-                if msg[MessageType.TIMESTAMP] < last_send_time:
+                if msg[MessageType.TIMESTAMP] > last_send_time:
                     last_send_time = msg[MessageType.TIMESTAMP]
 
             if MessageType.DATASET_SIZE in msg:
