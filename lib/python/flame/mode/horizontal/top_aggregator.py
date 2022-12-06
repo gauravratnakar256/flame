@@ -138,8 +138,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         logger.info("Time to get weight from middle aggregator: {}".format(end))
 
-        self.global_start = time.time()
-
         start = time.time()
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
@@ -157,6 +155,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
         end = time.time() - start
 
         logger.info("Time to aggregate weights: {}".format(end))
+
+        self.global_start = time.time()
 
     def put(self, tag: str) -> None:
         """Set data to remote role(s)."""
