@@ -119,7 +119,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             torch.nn.init.constant_(m.bias.data, 0)
 
     def _fetch_weights(self, tag: str) -> None:
-        
+
         logger.debug("calling _fetch_weights")
         channel = self.cm.get_by_tag(tag)
         if not channel:
@@ -255,10 +255,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         start = time.time()
 
         self.memory_manager.copy_weights_to_shared_memory(self.weights)
-
-        stime = time.time()
-
-        logger.info("Middle Aggregator send time {}".format(stime))
 
         channel.send(
             end, {
