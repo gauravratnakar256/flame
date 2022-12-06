@@ -238,10 +238,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # set necessary properties to help channel decide how to select ends
         channel.set_property("round", self._round)
 
-        self.global_stop = time.time() - self.global_start
-
-        logger.info("Time to be subtracted from middle aggregator {}".format(self.global_stop))
-
     def save_params(self):
         """Save hyperparamets in a model registry."""
         if self.config.hyperparameters:
