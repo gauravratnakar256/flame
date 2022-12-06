@@ -79,8 +79,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.registry_client.setup_run(mlflow_runname(self.config))
         self.metrics = dict()
 
-        self.global_start = 0
-        self.global_stop = 0
 
         # disk cache is used for saving memory in case model is large
         self.cache = Cache()
@@ -112,6 +110,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         total = 0
 
         start = time.time()
+        last_send_time = time.time() 
 
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
@@ -122,6 +121,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
             logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
                 weights = msg[MessageType.WEIGHTS]
+                if msg[MessageType.TIMESTAMP] < last_send_time:
+                    last_send_time = msg[MessageType.TIMESTAMP]
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
@@ -135,10 +136,10 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 self.cache[end] = tres
 
         end = time.time() - start
+        wait_time = last_send_time - start
 
-        self.global_start = time.time()
+        logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
 
-        logger.info("Time to get weight from middle aggregator: {}".format(end))
 
         start = time.time()
         # optimizer conducts optimization (in this case, aggregation)
@@ -185,7 +186,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
             logger.debug(f"sending weights to {end}")
             channel.send(end, {
                 MessageType.WEIGHTS: self.weights,
-                MessageType.ROUND: self._round
+                MessageType.ROUND: self._round,
+                MessageType.TIMESTAMP: time.time()
             })
 
         end = time.time() - start

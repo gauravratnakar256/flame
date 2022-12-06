@@ -34,7 +34,7 @@
     "hyperparameters": {
         "batchSize": 32,
         "learningRate": 0.01,
-        "rounds": 5,
+        "rounds": 8,
         "epochs": 1
     },
     "baseModel": {

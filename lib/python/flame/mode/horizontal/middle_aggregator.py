@@ -17,7 +17,7 @@
 
 import logging
 import time
-
+import torch
 from diskcache import Cache
 
 from ...channel_manager import ChannelManager
@@ -66,16 +66,17 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.cache = Cache()
         self.dataset_size = 0
 
-    def weights_init_uniform(self):
-        classname = self.model.__class__.__name__
-        if classname.find('Linear') != -1:
-            self.model.weight.data.uniform_(0.0, 1.0)
-            self.model.bias.data.fill_(0)
-        elif classname.find('Conv') != -1:
-            self.model.weight.data.normal_(0.0, 0.5)
-        elif classname.find('BatchNorm') != -1:
-            self.model.weight.data.normal_(1.0, 0.02)
-            self.model.bias.data.fill_(0)
+    def initialize_weights(self, m):
+        if isinstance(m, torch.nn.Conv2d):
+            torch.nn.init.kaiming_uniform_(m.weight.data,nonlinearity='relu')
+            if m.bias is not None:
+                torch.nn.init.constant_(m.bias.data, 0)
+        elif isinstance(m, torch.nn.BatchNorm2d):
+            torch.nn.init.constant_(m.weight.data, 1)
+            torch.nn.init.constant_(m.bias.data, 0)
+        elif isinstance(m, torch.nn.Linear):
+            torch.nn.init.kaiming_uniform_(m.weight.data)
+            torch.nn.init.constant_(m.bias.data, 0)
 
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
@@ -121,10 +122,11 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         if MessageType.ROUND in msg:
             self._round = msg[MessageType.ROUND]
 
-        end = time.time() - start
+        if MessageType.TIMESTAMP in msg:
+            wait_time = msg[MessageType.TIMESTAMP] - start
+            end = time.time() - start
+            logger.info("Time taken to get weights from top aggregator: {}".format(end - wait_time))
 
-        self.global_start = time.time()
-        logger.info("Time taken to get weights from top aggregator: {}".format(end))
 
     def _distribute_weights(self, tag: str) -> None:
         # channel = self.cm.get_by_tag(tag)
@@ -142,9 +144,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         #         MessageType.ROUND: self._round
         #     })
 
-        self.weights_init_uniform()
+        logger.debug("Inside distribute weight function")
+        self.model.apply(self.initialize_weights)
         self.dummy_weight1 =  self.model.state_dict()
-        self.weights_init_uniform()
+        self.model.apply(self.initialize_weights)
         self.dummy_weight2 =  self.model.state_dict()
         #time.sleep(3)
 
@@ -180,16 +183,12 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         global_weights = self.optimizer.do(self.cache, total)
         if global_weights is None:
             logger.info("failed model aggregation")
-            #time.sleep(1)
+            time.sleep(1)
             return
 
         # set global weights
         self.weights = global_weights
         self.dataset_size = total
-
-        self.global_stop = time.time() - self.global_start
-
-        logger.info("Time to be subtracted from top aggregator: {}".format(self.global_stop))
 
         #time.sleep(3)
 
@@ -211,7 +210,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         channel.send(
             end, {
                 MessageType.WEIGHTS: self.weights,
-                MessageType.DATASET_SIZE: self.dataset_size
+                MessageType.DATASET_SIZE: self.dataset_size,
+                MessageType.TIMESTAMP: time.time()
             })
 
         end = time.time() - start

@@ -25,6 +25,7 @@ class MessageType(Enum):
     EOT = 2  # end of training
     DATASET_SIZE = 3  # dataset size
     ROUND = 4  # round number
+    TIMESTAMP = 5
 
     # a digest of all the workers in distributed learning
     MEMBER_DIGEST = 5
