@@ -81,7 +81,7 @@ class PyTorchMedMNistAggregator(TopAggregator):
         #self.model = CNN(num_classes=9)
         self.moptimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3, weight_decay=1e-5)
         self.criterion = torch.nn.CrossEntropyLoss()
-        time.sleep(30)
+        #time.sleep(30)
 
     def load_data(self) -> None:
         """MedMNIST Pathology Dataset
