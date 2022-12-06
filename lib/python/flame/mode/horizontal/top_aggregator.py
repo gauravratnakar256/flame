@@ -146,7 +146,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             if MessageType.WEIGHTS in msg:
                 logger.debug(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
-                if msg[MessageType.TIMESTAMP] < last_send_time:
+                if msg[MessageType.TIMESTAMP] > last_send_time:
                     last_send_time = msg[MessageType.TIMESTAMP]
 
             if MessageType.DATASET_SIZE in msg:
