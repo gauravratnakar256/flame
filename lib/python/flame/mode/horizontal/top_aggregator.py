@@ -120,6 +120,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
             self._aggregate_weights(tag)
 
     def _aggregate_weights(self, tag: str) -> None:
+
+        # From Here
+
         channel = self.cm.get_by_tag(tag)
         if not channel:
             return
@@ -128,12 +131,19 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         start = time.time()
         self.global_start = time.time()
+
+        end1 = time.time()
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
             if not msg:
-                logger.debug(f"No data from {end}; skipping it")
+                logger.info(f"No data from {end}; skipping it")
+                end1 = time.time()
                 continue
             
+            logger.info("Last not receive time {}".format(end1))
+
+            end2 = time.time()
+
             if end not in self.shm_dict_list:
                 temp_dict = self.memory_manager.add_shm_refrence(end)
                 self.shm_dict_list[end] = temp_dict
@@ -173,6 +183,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
         end = time.time() - start
 
         logger.info("Time to aggregate weights: {}".format(end))
+
+        # Till Here
 
         # update model with global weights
         #self._update_model()

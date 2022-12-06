@@ -258,6 +258,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         self.memory_manager.copy_weights_to_shared_memory(self.weights)
 
+        time = time.time()
+
+        logger.log("Middle Aggregator send time {}".format(time))
+
         channel.send(
             end, {
                 MessageType.WEIGHTS: "Fetch weight from middle aggregator",
