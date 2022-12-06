@@ -260,7 +260,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         stime = time.time()
 
-        logger.log("Middle Aggregator send time {}".format(stime))
+        logger.info("Middle Aggregator send time {}".format(stime))
 
         channel.send(
             end, {
