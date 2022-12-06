@@ -207,6 +207,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         logger.info("Time taken to send model to middle aggregator: {}".format(end))
 
+        time.sleep(10)
+
     def inform_end_of_training(self) -> None:
         """Inform all the trainers that the training is finished."""
         channel = self.cm.get_by_tag(self.dist_tag)
