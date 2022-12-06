@@ -90,8 +90,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.optimizer = optimizer_provider.get(self.config.optimizer.sort,
                                                 **self.config.optimizer.kwargs)
 
-        self.global_start = 0
-        self.global_stop = 0
 
         self._round = 1
         self._rounds = 1
@@ -130,22 +128,16 @@ class TopAggregator(Role, metaclass=ABCMeta):
         total = 0
 
         start = time.time()
+        last_send_time = time.time() 
 
-        logger.info("Start time is {}".format(start))
+        #logger.info("Start time is {}".format(start))
 
-        self.global_start = time.time()
-
-        end1 = time.time()
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
             if not msg:
                 logger.info(f"No data from {end}; skipping it")
-                end1 = time.time()
                 continue
             
-            logger.info("Last not receive time {}".format(end1))
-
-            end2 = time.time()
 
             if end not in self.shm_dict_list:
                 temp_dict = self.memory_manager.add_shm_refrence(end)
@@ -154,6 +146,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
             if MessageType.WEIGHTS in msg:
                 logger.debug(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
+                if msg[MessageType.TIMESTAMP] > last_send_time:
+                    last_send_time = msg[MessageType.TIMESTAMP]
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
@@ -168,8 +162,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 self.cache[end] = tres
 
         end = time.time() - start
+        wait_time = last_send_time - start
 
-        logger.info("Time to get weight from middle aggregator: {}".format(end))
+        logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
 
         
         start = time.time()
@@ -219,7 +214,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
             #logger.info(f"sending weights to {end}")
             channel.send(end, {
                 MessageType.WEIGHTS: "Fetch weights from aggregator",
-                MessageType.ROUND: self._round
+                MessageType.ROUND: self._round,
+                MessageType.TIMESTAMP: time.time()
             })
 
         end = time.time() - start
@@ -271,10 +267,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # set necessary properties to help channel decide how to select ends
         channel.set_property("round", self._round)
-
-        self.global_stop = time.time() - self.global_start
-
-        logger.info("Time to be subtracted from middle aggregator {}".format(self.global_stop))
 
     def save_params(self):
         """Save hyperparamets in a model registry."""

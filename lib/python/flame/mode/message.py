@@ -25,9 +25,12 @@ class MessageType(Enum):
     EOT = 2  # end of training
     DATASET_SIZE = 3  # dataset size
     ROUND = 4  # round number
+    TIMESTAMP = 5
 
     # a digest of all the workers in distributed learning
     MEMBER_DIGEST = 5
     RING_WEIGHTS = 6 # global model weights in distributed learning
     NEW_TRAINER = 7 # sending message for the arrival of a new trainer
     IS_COMMITTER = 8 # is a trainer responsible to send weights to a new trainer in distributed learning
+
+

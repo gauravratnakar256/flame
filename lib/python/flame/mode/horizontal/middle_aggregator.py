@@ -156,8 +156,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             self._round = msg[MessageType.ROUND]
 
         end = time.time() - start
+        wait_time = msg[MessageType.TIMESTAMP] - start
 
-        logger.info("Time taken to get weights from top aggregator: {}".format(end))
+        logger.info("Time taken to get weights from top aggregator: {}".format(end - wait_time))
 
         logger.debug("calling _fetch_weights done")
 
@@ -265,7 +266,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         channel.send(
             end, {
                 MessageType.WEIGHTS: "Fetch weight from middle aggregator",
-                MessageType.DATASET_SIZE: self.dataset_size
+                MessageType.DATASET_SIZE: self.dataset_size,
+                MessageType.TIMESTAMP: time.time()
             })
 
         end = time.time() - start
