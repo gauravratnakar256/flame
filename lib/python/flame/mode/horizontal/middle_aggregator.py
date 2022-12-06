@@ -79,6 +79,9 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.dummy_weight1 = {}
         self.dummy_weight2 = {}
 
+        self.global_start = 0
+        self.global_stop = 0
+
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
             raise NotImplementedError(
@@ -118,6 +121,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             torch.nn.init.constant_(m.bias.data, 0)
 
     def _fetch_weights(self, tag: str) -> None:
+
+        self.global_start = time.time()
         logger.debug("calling _fetch_weights")
         channel = self.cm.get_by_tag(tag)
         if not channel:
@@ -265,6 +270,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         logger.debug("sending weights done")
 
+        self.global_stop = time.time() - self.global_start
+
+        logger.info("Time to be subtracted from top aggregator: {}".format(self.global_stop))
+
     def update_round(self):
         """Update the round counter."""
         logger.debug(f"Update current round: {self._round}")
@@ -276,6 +285,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         # set necessary properties to help channel decide how to select ends
         channel.set_property("round", self._round)
+
 
     def inform_end_of_training(self) -> None:
         """Inform all the trainers that the training is finished."""

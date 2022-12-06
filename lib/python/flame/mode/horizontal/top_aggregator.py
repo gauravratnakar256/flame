@@ -90,6 +90,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.optimizer = optimizer_provider.get(self.config.optimizer.sort,
                                                 **self.config.optimizer.kwargs)
 
+        self.global_start = 0
+        self.global_stop = 0
+
         self._round = 1
         self._rounds = 1
         if 'rounds' in self.config.hyperparameters:
@@ -153,6 +156,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
         end = time.time() - start
 
         logger.info("Time to get weight from middle aggregator: {}".format(end))
+
+        self.global_start = time.time()
 
         
         start = time.time()
@@ -252,6 +257,10 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # set necessary properties to help channel decide how to select ends
         channel.set_property("round", self._round)
+
+        self.global_stop = time.time()
+
+        logger.info("Time to be subtracted from middle aggregator {}".format(self.global_stop))
 
     def save_params(self):
         """Save hyperparamets in a model registry."""
