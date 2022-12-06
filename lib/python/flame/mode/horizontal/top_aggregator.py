@@ -140,7 +140,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         global_weights = self.optimizer.do(self.cache, total)
         if global_weights is None:
             logger.info("failed model aggregation")
-            time.sleep(1)
+            #time.sleep(1)
             return
 
         # set global weights
