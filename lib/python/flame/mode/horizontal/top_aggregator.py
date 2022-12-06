@@ -127,6 +127,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         total = 0
 
         start = time.time()
+        self.global_start = time.time()
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
             if not msg:
@@ -156,8 +157,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
         end = time.time() - start
 
         logger.info("Time to get weight from middle aggregator: {}".format(end))
-
-        self.global_start = time.time()
 
         
         start = time.time()
@@ -258,7 +257,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # set necessary properties to help channel decide how to select ends
         channel.set_property("round", self._round)
 
-        self.global_stop = time.time()
+        self.global_stop = time.time() - self.global_stop
 
         logger.info("Time to be subtracted from middle aggregator {}".format(self.global_stop))
 
