@@ -130,6 +130,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
         total = 0
 
         start = time.time()
+
+        logger.info("Start time is {}".format(start))
+
         self.global_start = time.time()
 
         end1 = time.time()
