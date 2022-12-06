@@ -79,8 +79,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.dummy_weight1 = {}
         self.dummy_weight2 = {}
 
-        self.global_start = 0
-        self.global_stop = 0
 
         self.framework = get_ml_framework_in_use()
         if self.framework == MLFramework.UNKNOWN:
@@ -121,8 +119,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             torch.nn.init.constant_(m.bias.data, 0)
 
     def _fetch_weights(self, tag: str) -> None:
-
-        self.global_start = time.time()
+        
         logger.debug("calling _fetch_weights")
         channel = self.cm.get_by_tag(tag)
         if not channel:
@@ -155,10 +152,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         if MessageType.ROUND in msg:
             self._round = msg[MessageType.ROUND]
 
-        end = time.time() - start
-        wait_time = msg[MessageType.TIMESTAMP] - start
-
-        logger.info("Time taken to get weights from top aggregator: {}".format(end - wait_time))
+        if MessageType.TIMESTAMP in msg:
+            wait_time = msg[MessageType.TIMESTAMP] - start
+            end = time.time() - start
+            logger.info("Time taken to get weights from top aggregator: {}".format(end - wait_time))
 
         logger.debug("calling _fetch_weights done")
 
@@ -275,10 +272,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         logger.info("Time taken to send weights to top aggregator: {}".format(end))
 
         logger.debug("sending weights done")
-
-        self.global_stop = time.time() - self.global_start
-
-        logger.info("Time to be subtracted from top aggregator: {}".format(self.global_stop))
 
     def update_round(self):
         """Update the round counter."""
