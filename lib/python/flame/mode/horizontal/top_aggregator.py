@@ -234,7 +234,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # set necessary properties to help channel decide how to select ends
         channel.set_property("round", self._round)
 
-        self.global_stop = time.time()
+        self.global_stop = time.time() - self.global_start
 
         logger.info("Time to be subtracted from middle aggregator {}".format(self.global_stop))
 

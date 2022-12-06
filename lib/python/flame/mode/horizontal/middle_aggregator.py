@@ -94,8 +94,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
     def _fetch_weights(self, tag: str) -> None:
 
-        self.global_start = time.time()
-
         logger.debug("calling _fetch_weights")
         channel = self.cm.get_by_tag(tag)
         if not channel:
@@ -125,6 +123,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         end = time.time() - start
 
+        self.global_start = time.time()
         logger.info("Time taken to get weights from top aggregator: {}".format(end))
 
     def _distribute_weights(self, tag: str) -> None:
@@ -188,6 +187,10 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.weights = global_weights
         self.dataset_size = total
 
+        self.global_stop = time.time() - self.global_start
+
+        logger.info("Time to be subtracted from top aggregator: {}".format(self.global_stop))
+
         #time.sleep(3)
 
     def _send_weights(self, tag: str) -> None:
@@ -217,10 +220,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         logger.debug("sending weights done")
 
-        self.global_stop = time.time() - self.global_start
-
-        logger.info("Time to be subtracted from top aggregator: {}".format(self.global_stop))
-
+        
     def update_round(self):
         """Update the round counter."""
         logger.debug(f"Update current round: {self._round}")
