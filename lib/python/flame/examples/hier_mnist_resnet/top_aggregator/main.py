@@ -76,8 +76,8 @@ class PyTorchMedMNistAggregator(TopAggregator):
 
     def initialize(self):
         """Initialize."""
-        #self.model = torchvision.models.resnet50()
-        self.model = torchvision.models.resnet152()
+        self.model = torchvision.models.resnet50()
+        #self.model = torchvision.models.resnet152()
         #self.model = CNN(num_classes=9)
         self.moptimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3, weight_decay=1e-5)
         self.criterion = torch.nn.CrossEntropyLoss()
