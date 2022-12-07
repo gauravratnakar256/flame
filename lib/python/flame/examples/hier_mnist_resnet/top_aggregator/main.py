@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     config = Config(args.config)
 
-    time.sleep(30)
+    time.sleep(5)
 
     a = PyTorchMedMNistAggregator(config)
     a.compose()
