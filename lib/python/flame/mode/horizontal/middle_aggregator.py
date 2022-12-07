@@ -127,6 +127,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             end = time.time() - start
             logger.info("Time taken to get weights from top aggregator: {}".format(end - wait_time))
 
+        time.sleep(3)
 
     def _distribute_weights(self, tag: str) -> None:
         # channel = self.cm.get_by_tag(tag)
@@ -149,7 +150,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.dummy_weight1 =  self.model.state_dict()
         self.model.apply(self.initialize_weights)
         self.dummy_weight2 =  self.model.state_dict()
-        #time.sleep(3)
+        time.sleep(3)
 
     def _aggregate_weights(self, tag: str) -> None:
         # channel = self.cm.get_by_tag(tag)
@@ -190,7 +191,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.weights = global_weights
         self.dataset_size = total
 
-        #time.sleep(3)
+        time.sleep(3)
 
     def _send_weights(self, tag: str) -> None:
         logger.debug("calling _send_weights")
