@@ -135,8 +135,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
         get_time = 0
         num = 0
 
-        last_processing_time = 0
-
         start = time.time()
         #logger.info("Start time is {}".format(start))
 
