@@ -230,7 +230,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             channel.send(end, {
                 MessageType.WEIGHTS: "Fetch weights from aggregator",
                 MessageType.ROUND: self._round,
-                MessageType.TIMESTAMP: time.time()
+                MessageType.TIMESTAMP: start
             })
 
         end = time.time() - start
