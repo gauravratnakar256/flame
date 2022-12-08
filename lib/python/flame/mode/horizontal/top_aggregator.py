@@ -154,10 +154,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
             if MessageType.WEIGHTS in msg:
                 logger.debug(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
-                get_time +=  (time.time() - msg[MessageType.TIMESTAMP] - last_processing_time)
+                get_time +=  time.time() - msg[MessageType.TIMESTAMP] 
                 wait_time += msg[MessageType.TIMESTAMP] - start 
             
-            ts_start = time.time()
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
                 total += count
@@ -170,7 +169,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 # save training result from trainer in a disk cache
                 self.cache[end] = tres
 
-            last_processing_time = time.time() - ts_start
+            logger.info("For endid {}".format(end))
 
         
         logger.info("Wait time is {}".format(wait_time/num))
