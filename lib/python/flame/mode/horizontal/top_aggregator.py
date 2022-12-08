@@ -108,12 +108,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
     def create_model_structure(self):
         start = time.time()
         self.memory_manager.create_model_structure(self.model)
-        #Load Parameters to shared memory
-        #self.memory_manager.load_parameters_to_shared_memory(self.model)
         self.weights = self.model.state_dict()
         end = time.time() - start
-        logger.info("Intialization time {}".format(end))
-        #time.sleep(30)
+        #logger.info("Intialization time {}".format(end))
  
     def get(self, tag: str) -> None:
         """Get data from remote role(s)."""
@@ -123,20 +120,16 @@ class TopAggregator(Role, metaclass=ABCMeta):
     def _aggregate_weights(self, tag: str) -> None:
 
         # From Here
-
         channel = self.cm.get_by_tag(tag)
         if not channel:
             return
 
         total = 0
-
-
         wait_time = 0
         get_time = 0
         num = 0
 
         start = time.time()
-        #logger.info("Start time is {}".format(start))
 
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
@@ -153,9 +146,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 logger.debug(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
                 get_time +=  time.time() - msg[MessageType.TIMESTAMP]
-                wait_time += msg[MessageType.TIMESTAMP] - start 
+                #wait_time += msg[MessageType.TIMESTAMP] - start 
             
-
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
                 total += count
@@ -168,10 +160,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 # save training result from trainer in a disk cache
                 self.cache[end] = tres
 
-        #logger.info("Wait time is {}".format(wait_time))
-
         logger.info("Time to get from middle aggregator {}".format(get_time))
-        #logger.info("Wait time is {}".format(wait_time))
 
         start = time.time()
         # optimizer conducts optimization (in this case, aggregation)
@@ -204,9 +193,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
         # this call waits for at least one peer to join this channel
         channel.await_join()
 
-        # before distributing weights, update it from global model
-        #self._update_weights()
-        
         start = time.time()
 
         self.memory_manager.copy_weights_to_shared_memory(self.weights)
@@ -224,7 +210,6 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         logger.info("Time taken to send model to middle aggregator: {}".format(end))
 
-        #time.sleep(10)
 
     def inform_end_of_training(self) -> None:
         """Inform all the trainers that the training is finished."""

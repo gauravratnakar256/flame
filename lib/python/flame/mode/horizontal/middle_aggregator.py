@@ -91,7 +91,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.memory_manager.create_model_structure(self.model)
         self.weights = self.model.state_dict()
         end = time.time() - start
-        logger.info("Intialization time {}".format(end))
+        #logger.info("Intialization time {}".format(end))
         #time.sleep(30)
 
     def get(self, tag: str) -> None:
@@ -137,8 +137,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         #time.sleep(5)
 
-        start = time.time()
-
         msg = channel.recv(end)
 
         if not end in self.shm_dict_list:
@@ -147,7 +145,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
 
         if MessageType.WEIGHTS in msg:
             self.weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
-            #self._update_model()
 
         if MessageType.EOT in msg:
             self._work_done = msg[MessageType.EOT]
@@ -188,7 +185,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.dummy_weight1 =  self.model.state_dict()
         self.model.apply(self.initialize_weights)
         self.dummy_weight2 =  self.model.state_dict()
-        #time.sleep(3)
 
     def _aggregate_weights(self, tag: str) -> None:
         # channel = self.cm.get_by_tag(tag)
@@ -235,10 +231,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # set global weights
         self.weights = global_weights
         self.dataset_size = total
-
-        #self._update_model()
-
-        #time.sleep(3)
 
 
     def _send_weights(self, tag: str) -> None:
