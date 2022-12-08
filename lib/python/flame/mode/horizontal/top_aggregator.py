@@ -108,12 +108,12 @@ class TopAggregator(Role, metaclass=ABCMeta):
             return
 
         total = 0
+        num = 0
+
+        wait_time = 0
+        get_time = 0
 
         start = time.time()
-
-        wait_time = {}
-        get_time = {}
-        send_time = {}
 
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
@@ -121,12 +121,13 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 logger.debug(f"No data from {end}; skipping it")
                 continue
 
+            num += 1
+
             logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
                 weights = msg[MessageType.WEIGHTS]
-                get_time[end] =  time.time() - msg[MessageType.TIMESTAMP]
-                wait_time[end] = start - msg[MessageType.TIMESTAMP]
-                send_time[end] = msg[MessageType.TIMESTAMP]
+                get_time +=  time.time() - msg[MessageType.TIMESTAMP]
+                wait_time += start - msg[MessageType.TIMESTAMP]
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
@@ -141,14 +142,10 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         #logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
 
-        for k, v in wait_time.items():
-            logger.info("Wait time for {} is {}".format(k, v))
+   
+        logger.info("Wait time is {}".format(wait_time/num))
 
-        for k, v in get_time.items():
-            logger.info("Get time for {} is {}".format(k, v))
-
-        for k, v in send_time.items():
-            logger.info("send time for {} is {}".format(k, v))
+        logger.info("Get time is {}".format(get_time/num))
 
 
         start = time.time()
