@@ -130,9 +130,12 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         total = 0
 
-        start = time.time()
-        last_send_time = time.time() 
 
+        start = time.time()
+
+        wait_time = {}
+        get_time = {}
+        send_time = {}
         #logger.info("Start time is {}".format(start))
 
         # receive local model parameters from trainers
@@ -149,9 +152,10 @@ class TopAggregator(Role, metaclass=ABCMeta):
             if MessageType.WEIGHTS in msg:
                 logger.debug(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
-                if msg[MessageType.TIMESTAMP] > last_send_time:
-                    last_send_time = msg[MessageType.TIMESTAMP]
-
+                get_time[end] =  time.time() - msg[MessageType.TIMESTAMP]
+                wait_time[end] = start - msg[MessageType.TIMESTAMP]
+                send_time[end] = msg[MessageType.TIMESTAMP]
+            
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
                 total += count
@@ -164,12 +168,19 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 # save training result from trainer in a disk cache
                 self.cache[end] = tres
 
-        end = time.time() - start
-        wait_time = last_send_time - start
-
-        logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
-
         
+        for k, v in wait_time.items():
+            logger.info("Wait time for {} is {}".format(k, v))
+
+        for k, v in get_time.items():
+            logger.info("Get time for {} is {}".format(k, v))
+
+        for k, v in send_time.items():
+            logger.info("send time for {} is {}".format(k, v))
+
+      
+        #logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
+
         start = time.time()
         # optimizer conducts optimization (in this case, aggregation)
         global_weights = self.optimizer.do(self.cache, total)
@@ -183,7 +194,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         end = time.time() - start
 
-        logger.info("Time to aggregate weights: {}".format(end))
+        #logger.info("Time to aggregate weights: {}".format(end))
 
         # Till Here
 
@@ -223,7 +234,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         end = time.time() - start
 
-        logger.info("Time taken to send model to middle aggregator: {}".format(end))
+        #logger.info("Time taken to send model to middle aggregator: {}".format(end))
 
         #time.sleep(10)
 
