@@ -154,7 +154,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             if MessageType.WEIGHTS in msg:
                 logger.debug(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
-                get_time +=  time.time() - msg[MessageType.TIMESTAMP] - last_processing_time
+                get_time +=  time.time() - msg[MessageType.TIMESTAMP]
                 logger.info(get_time)
                 wait_time += msg[MessageType.TIMESTAMP] - start 
             
@@ -173,6 +173,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 self.cache[end] = tres
 
             last_processing_time = time.time() - ts_start
+
+            logger.info("Processing Time {}".format(last_processing_time))
 
         
         logger.info("Wait time is {}".format(wait_time))
