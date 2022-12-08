@@ -107,10 +107,6 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # one aggregator is sufficient
         end = channel.one_end()
 
-        #time.sleep(5)
-
-        start = time.time()
-
         msg = channel.recv(end)
 
         if MessageType.WEIGHTS in msg:
@@ -123,9 +119,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             self._round = msg[MessageType.ROUND]
 
         if MessageType.TIMESTAMP in msg:
-            wait_time = msg[MessageType.TIMESTAMP] - start
-            end = time.time() - start
-            logger.info("Time taken to get weights from top aggregator: {}".format(end - wait_time))
+            end = time.time() - msg[MessageType.TIMESTAMP]
+            logger.info("Time taken to get weights from top aggregator: {}".format(end))
 
         #time.sleep(3)
 
