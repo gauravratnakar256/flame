@@ -155,52 +155,39 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 get_time +=  time.time() - msg[MessageType.TIMESTAMP]
                 wait_time += msg[MessageType.TIMESTAMP] - start 
             
-            # ts_start = time.time()
 
-            # if MessageType.DATASET_SIZE in msg:
-            #     count = msg[MessageType.DATASET_SIZE]
-            #     total += count
+            if MessageType.DATASET_SIZE in msg:
+                count = msg[MessageType.DATASET_SIZE]
+                total += count
 
-            # logger.debug(f"{end}'s parameters trained with {count} samples")
+            logger.debug(f"{end}'s parameters trained with {count} samples")
 
-            # if weights is not None:
-            #     logger.debug("Count is {}".format(count))
-            #     tres = TrainResult(weights, count)
-            #     # save training result from trainer in a disk cache
-            #     self.cache[end] = tres
+            if weights is not None:
+                logger.debug("Count is {}".format(count))
+                tres = TrainResult(weights, count)
+                # save training result from trainer in a disk cache
+                self.cache[end] = tres
 
-            # last_processing_time = time.time() - ts_start
-
-            
-
-        
         #logger.info("Wait time is {}".format(wait_time))
 
-        logger.info("Get time is {}".format(get_time))
-        logger.info("Wait time is {}".format(wait_time))
+        logger.info("Time to get from middle aggregator {}".format(get_time))
+        #logger.info("Wait time is {}".format(wait_time))
 
-      
-        #logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
+        start = time.time()
+        # optimizer conducts optimization (in this case, aggregation)
+        global_weights = self.optimizer.do(self.cache, total)
+        if global_weights is None:
+            logger.info("failed model aggregation")
+            time.sleep(1)
+            return
 
-        # start = time.time()
-        # # optimizer conducts optimization (in this case, aggregation)
-        # global_weights = self.optimizer.do(self.cache, total)
-        # if global_weights is None:
-        #     logger.info("failed model aggregation")
-        #     time.sleep(1)
-        #     return
+        # set global weights
+        self.weights = global_weights
 
-        # # set global weights
-        # self.weights = global_weights
+        end = time.time() - start
 
-        # end = time.time() - start
+        logger.info("Time to aggregate weights: {}".format(end))
 
-        #logger.info("Time to aggregate weights: {}".format(end))
-
-        # Till Here
-
-        # update model with global weights
-        #self._update_model()
 
     def put(self, tag: str) -> None:
         """Set data to remote role(s)."""
@@ -235,7 +222,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         end = time.time() - start
 
-        #logger.info("Time taken to send model to middle aggregator: {}".format(end))
+        logger.info("Time taken to send model to middle aggregator: {}".format(end))
 
         #time.sleep(10)
 
