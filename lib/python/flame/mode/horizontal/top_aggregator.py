@@ -131,11 +131,12 @@ class TopAggregator(Role, metaclass=ABCMeta):
         total = 0
 
 
-        start = time.time()
+        wait_time = 0
+        get_time = 0
 
-        wait_time = {}
-        get_time = {}
-        send_time = {}
+        num = 0
+
+        start = time.time()
         #logger.info("Start time is {}".format(start))
 
         # receive local model parameters from trainers
@@ -144,7 +145,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 logger.info(f"No data from {end}; skipping it")
                 continue
             
-
+            num += 1
             if end not in self.shm_dict_list:
                 temp_dict = self.memory_manager.add_shm_refrence(end)
                 self.shm_dict_list[end] = temp_dict
@@ -152,9 +153,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
             if MessageType.WEIGHTS in msg:
                 logger.debug(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
-                get_time[end] =  time.time() - msg[MessageType.TIMESTAMP]
-                wait_time[end] = msg[MessageType.TIMESTAMP] - start
-                send_time[end] = msg[MessageType.TIMESTAMP]
+                get_time +=  time.time() - msg[MessageType.TIMESTAMP]
+                wait_time += start - msg[MessageType.TIMESTAMP]
             
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
@@ -169,14 +169,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 self.cache[end] = tres
 
         
-        for k, v in wait_time.items():
-            logger.info("Wait time for {} is {}".format(k, v))
+        logger.info("Wait time is {}".format(wait_time/num))
 
-        for k, v in get_time.items():
-            logger.info("Get time for {} is {}".format(k, v))
-
-        for k, v in send_time.items():
-            logger.info("send time for {} is {}".format(k, v))
+        logger.info("Get time is {}".format(get_time/num))
 
       
         #logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
