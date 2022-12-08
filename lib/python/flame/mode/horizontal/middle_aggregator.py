@@ -265,7 +265,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             end, {
                 MessageType.WEIGHTS: "Fetch weight from middle aggregator",
                 MessageType.DATASET_SIZE: self.dataset_size,
-                MessageType.TIMESTAMP: time.time()
+                MessageType.TIMESTAMP: start
             })
 
         end = time.time() - start

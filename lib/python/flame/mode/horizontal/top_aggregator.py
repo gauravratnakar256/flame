@@ -177,6 +177,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         #logger.info("Wait time is {}".format(wait_time))
 
         logger.info("Get time is {}".format(get_time))
+        logger.info("Wait time is {}".format(wait_time))
 
       
         #logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
