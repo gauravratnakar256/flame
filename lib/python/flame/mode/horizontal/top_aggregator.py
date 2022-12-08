@@ -140,7 +140,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         #logger.info("Start time is {}".format(start))
 
         # receive local model parameters from trainers
-        for end, msg, t in channel.recv_fifo(channel.ends()):
+        for end, msg in channel.recv_fifo(channel.ends()):
             if not msg:
                 logger.info(f"No data from {end}; skipping it")
                 continue
@@ -171,7 +171,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         
         logger.info("Wait time is {}".format(wait_time/num))
 
-        logger.info("Get time is {}".format(get_time/num))
+        logger.info("Get time is {}".format(get_time))
 
       
         #logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
