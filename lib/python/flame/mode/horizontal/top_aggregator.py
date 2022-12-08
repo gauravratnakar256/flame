@@ -133,6 +133,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         wait_time = 0
         get_time = 0
+        num = 0
 
         last_processing_time = 0
 
