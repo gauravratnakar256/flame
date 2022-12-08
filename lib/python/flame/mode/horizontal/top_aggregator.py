@@ -140,7 +140,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         #logger.info("Start time is {}".format(start))
 
         # receive local model parameters from trainers
-        for end, msg in channel.recv_fifo(channel.ends()):
+        for end, msg, t in channel.recv_fifo(channel.ends()):
             if not msg:
                 logger.info(f"No data from {end}; skipping it")
                 continue
@@ -154,7 +154,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 logger.debug(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
                 get_time +=  time.time() - msg[MessageType.TIMESTAMP]
-                wait_time += start - msg[MessageType.TIMESTAMP]
+                wait_time += msg[MessageType.TIMESTAMP] - start
             
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]

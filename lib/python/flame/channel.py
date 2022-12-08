@@ -16,6 +16,7 @@
 """Channel."""
 
 import asyncio
+import time
 import logging
 from typing import Any, Tuple, Union
 
@@ -208,7 +209,7 @@ class Channel(object):
         This method is not thread-safe.
         """
 
-        async def _get(end_id) -> Tuple[str, Any]:
+        async def _get(end_id) -> Tuple[str, Any, Any]:
             if not self.has(end_id):
                 # can't receive message from end_id
                 yield end_id, None
@@ -254,7 +255,7 @@ class Channel(object):
             result, status = run_async(_inner2(), self._backend.loop())
             (end_id, payload) = result
             msg = cloudpickle.loads(payload) if payload and status else None
-            yield end_id, msg
+            yield end_id, msg, time.time()
 
     def peek(self, end_id):
         """Peek rxq of end_id and return data if queue is not empty."""
