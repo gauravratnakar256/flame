@@ -127,7 +127,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             if MessageType.WEIGHTS in msg:
                 weights = msg[MessageType.WEIGHTS]
                 get_time +=  time.time() - msg[MessageType.TIMESTAMP]
-                wait_time += start - msg[MessageType.TIMESTAMP]
+                wait_time += msg[MessageType.TIMESTAMP] - start
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
@@ -145,7 +145,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
    
         logger.info("Wait time is {}".format(wait_time/num))
 
-        logger.info("Get time is {}".format(get_time/num))
+        logger.info("Get time is {}".format(get_time))
 
 
         start = time.time()
