@@ -110,7 +110,10 @@ class TopAggregator(Role, metaclass=ABCMeta):
         total = 0
 
         start = time.time()
-        last_send_time = time.time() 
+
+        wait_time = {}
+        get_time = {}
+        send_time = {}
 
         # receive local model parameters from trainers
         for end, msg in channel.recv_fifo(channel.ends()):
@@ -121,8 +124,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
             logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
                 weights = msg[MessageType.WEIGHTS]
-                if msg[MessageType.TIMESTAMP] > last_send_time:
-                    last_send_time = msg[MessageType.TIMESTAMP]
+                get_time[end] =  time.time() - msg[MessageType.TIMESTAMP]
+                wait_time[end] = start - msg[MessageType.TIMESTAMP]
+                send_time[end] = msg[MessageType.TIMESTAMP]
 
             if MessageType.DATASET_SIZE in msg:
                 count = msg[MessageType.DATASET_SIZE]
@@ -135,10 +139,16 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 # save training result from trainer in a disk cache
                 self.cache[end] = tres
 
-        end = time.time() - start
-        wait_time = last_send_time - start
+        #logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
 
-        logger.info("Time to get weight from middle aggregator: {}".format(end - wait_time))
+        for k, v in wait_time.items():
+            logger.info("Wait time for {} is {}".format(k, v))
+
+        for k, v in get_time.items():
+            logger.info("Get time for {} is {}".format(k, v))
+
+        for k, v in send_time.items():
+            logger.info("send time for {} is {}".format(k, v))
 
 
         start = time.time()
@@ -157,7 +167,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         end = time.time() - start
 
-        logger.info("Time to aggregate weights: {}".format(end))
+        #logger.info("Time to aggregate weights: {}".format(end))
 
         
 
@@ -192,7 +202,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         end = time.time() - start
 
-        logger.info("Time taken to send model to middle aggregator: {}".format(end))
+        #logger.info("Time taken to send model to middle aggregator: {}".format(end))
 
     def inform_end_of_training(self) -> None:
         """Inform all the trainers that the training is finished."""
