@@ -156,9 +156,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
             self._round = msg[MessageType.ROUND]
 
         if MessageType.TIMESTAMP in msg:
-            wait_time = msg[MessageType.TIMESTAMP] - start
-            end = time.time() - start
-            logger.info("Time taken to get weights from top aggregator: {}".format(end - wait_time))
+            end = time.time() - msg[MessageType.TIMESTAMP]
+            logger.info("Time taken to get weights from top aggregator: {}".format(end))
 
         logger.debug("calling _fetch_weights done")
 
