@@ -128,36 +128,36 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 get_time +=  time.time() - msg[MessageType.TIMESTAMP]
                 #wait_time += msg[MessageType.TIMESTAMP] - start
 
-            if MessageType.DATASET_SIZE in msg:
-                count = msg[MessageType.DATASET_SIZE]
-                total += count
+            # if MessageType.DATASET_SIZE in msg:
+            #     count = msg[MessageType.DATASET_SIZE]
+            #     total += count
 
-            logger.debug(f"{end}'s parameters trained with {count} samples")
+            # logger.debug(f"{end}'s parameters trained with {count} samples")
 
-            if weights is not None:
-                tres = TrainResult(weights, count)
-                # save training result from trainer in a disk cache
-                self.cache[end] = tres
+            # if weights is not None:
+            #     tres = TrainResult(weights, count)
+            #     # save training result from trainer in a disk cache
+            #     self.cache[end] = tres
 
         logger.info("Time to get from middle aggregator: {}".format(get_time))
 
-        start = time.time()
-        # optimizer conducts optimization (in this case, aggregation)
-        global_weights = self.optimizer.do(self.cache, total)
-        if global_weights is None:
-            logger.info("failed model aggregation")
-            time.sleep(1)
-            return
+        # start = time.time()
+        # # optimizer conducts optimization (in this case, aggregation)
+        # global_weights = self.optimizer.do(self.cache, total)
+        # if global_weights is None:
+        #     logger.info("failed model aggregation")
+        #     time.sleep(1)
+        #     return
 
-        # set global weights
-        self.weights = global_weights
+        # # set global weights
+        # self.weights = global_weights
 
-        # update model with global weights
-        self._update_model()
+        # # update model with global weights
+        # self._update_model()
 
-        end = time.time() - start
+        # end = time.time() - start
 
-        logger.info("Time to aggregate weights: {}".format(end))
+        # logger.info("Time to aggregate weights: {}".format(end))
 
         
 
@@ -192,7 +192,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         end = time.time() - start
 
-        logger.info("Time taken to send model to middle aggregator: {}".format(end))
+        #logger.info("Time taken to send model to middle aggregator: {}".format(end))
 
     def inform_end_of_training(self) -> None:
         """Inform all the trainers that the training is finished."""
