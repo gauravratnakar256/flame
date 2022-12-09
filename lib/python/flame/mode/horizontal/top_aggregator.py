@@ -162,18 +162,18 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         #logger.info("Time to get from middle aggregator: {}".format(get_time))
 
-        start = time.time()
-        # optimizer conducts optimization (in this case, aggregation)
-        global_weights = self.optimizer.do(self.cache, total)
-        if global_weights is None:
-            logger.info("failed model aggregation")
-            time.sleep(1)
-            return
+        # start = time.time()
+        # # optimizer conducts optimization (in this case, aggregation)
+        # global_weights = self.optimizer.do(self.cache, total)
+        # if global_weights is None:
+        #     logger.info("failed model aggregation")
+        #     time.sleep(1)
+        #     return
 
-        # set global weights
-        self.weights = global_weights
+        # # set global weights
+        # self.weights = global_weights
 
-        end = time.time() - start
+        # end = time.time() - start
 
         #logger.info("Time to aggregate weights: {}".format(end))
 
