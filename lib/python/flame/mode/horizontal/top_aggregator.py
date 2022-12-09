@@ -160,7 +160,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             #     # save training result from trainer in a disk cache
             #     self.cache[end] = tres
 
-        #logger.info("Time to get from middle aggregator: {}".format(get_time))
+        logger.info("Time to get from middle aggregator: {}".format(get_time))
 
         # start = time.time()
         # # optimizer conducts optimization (in this case, aggregation)
