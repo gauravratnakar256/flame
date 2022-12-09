@@ -148,19 +148,19 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 get_time +=  time.time() - msg[MessageType.TIMESTAMP]
                 #wait_time += msg[MessageType.TIMESTAMP] - start 
             
-            if MessageType.DATASET_SIZE in msg:
-                count = msg[MessageType.DATASET_SIZE]
-                total += count
+            # if MessageType.DATASET_SIZE in msg:
+            #     count = msg[MessageType.DATASET_SIZE]
+            #     total += count
 
-            logger.debug(f"{end}'s parameters trained with {count} samples")
+            # logger.debug(f"{end}'s parameters trained with {count} samples")
 
-            if weights is not None:
-                logger.debug("Count is {}".format(count))
-                tres = TrainResult(weights, count)
-                # save training result from trainer in a disk cache
-                self.cache[end] = tres
+            # if weights is not None:
+            #     logger.debug("Count is {}".format(count))
+            #     tres = TrainResult(weights, count)
+            #     # save training result from trainer in a disk cache
+            #     self.cache[end] = tres
 
-        logger.info("Time to get from middle aggregator: {}".format(get_time))
+        #logger.info("Time to get from middle aggregator: {}".format(get_time))
 
         start = time.time()
         # optimizer conducts optimization (in this case, aggregation)
@@ -175,7 +175,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         end = time.time() - start
 
-        logger.info("Time to aggregate weights: {}".format(end))
+        #logger.info("Time to aggregate weights: {}".format(end))
 
 
     def put(self, tag: str) -> None:
