@@ -208,7 +208,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         end = time.time() - start
 
-        logger.info("Time taken to send model to middle aggregator: {}".format(end))
+        #logger.info("Time taken to send model to middle aggregator: {}".format(end))
 
 
     def inform_end_of_training(self) -> None:
