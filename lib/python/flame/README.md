@@ -16,23 +16,53 @@ cd ..
 make install
 ```
 
-## Configuring Brokers
-As the flame system uses MQTT brokers to exchange messages during federated learning, to run the python library locally, you could either 1) install a local MQTT broker 2) use a public MQTT broker. Here we'll illustrate the second option.
+## Run Hierarchical FL Job With MQTT backend
 
-Go to any examples that you wish to run locally in `examples` directory, change the `host` from `"flame-mosquitto"` to `broker.hivemq.com` in the `config.json` files of both the trainer and aggregator.
-
-## Running the Python Code
+## Install mosquitto broker
 
 ```bash
-cd examples/mnist/trainer
-
-python keras/main.py config.json
+sudo apt-get update
+sudo apt-get install mosquitto
 ```
+
+Update mosquitto broker URL in config.json of trainers, middle_aggregator and top_aggregator. It will be localhost with no port for local machine.
+
+## Run Trainers
 
 ```bash
-# Open another terminal
-conda activate flame
-cd examples/mnist/aggregator
+cd examples/hier_mnist/trainer
 
-python keras/main.py config.json
+python main.py config_us.json
+
+#Open another terminal and run
+
+python main.py config_uk.json
+
 ```
+
+## Run Middle Aggregator
+
+```bash
+cd examples/hier_mnist/middle_aggregator
+
+python main.py config_us.json
+
+#Open another terminal and run
+
+python main.py config_uk.json
+
+```
+
+## Run Top Aggregator
+
+```bash
+cd examples/hier_mnist/top_aggregator
+
+python main.py config.json
+```
+
+## Run Hierarchical FL Job With Grpc backend
+
+Go to flame/cmd/metaserver and run  `go run main.go`. This will start metaserver which will run on port 10104. Update backend as p2p for grpc in configs of all trainers and aggregators. Start the job similar to mqtt backend
+
+
