@@ -161,8 +161,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.weights = global_weights
 
         # update model with global weights
-        #self._update_model()
-        self.memory_manager.copy_weights_to_shared_memory(global_weights)
+        self._update_model()
+        
 
     def put(self, tag: str) -> None:
         """Set data to remote role(s)."""
@@ -180,8 +180,8 @@ class TopAggregator(Role, metaclass=ABCMeta):
         channel.await_join()
 
         # before distributing weights, update it from global model
-        #self._update_weights()
-        self.weights = self.memory_manager.get_weights_from_shared_mem_self()
+        self._update_weights()
+        self.memory_manager.copy_weights_to_shared_memory(self.weights)
 
         #Load Parameters to shared memory
         #self.memory_manager.load_parameters_to_shared_memory(self.model)
