@@ -3,7 +3,7 @@
     "backend": "p2p",
     "brokers": [
 	{
-      	"host": "localhost",
+      	"host": "mqtt",
       	"sort": "mqtt"
     	},
         {
