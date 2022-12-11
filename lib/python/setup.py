@@ -19,7 +19,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='flame',
-    version='0.0.11',
+    version='0.0.13',
     author='Flame Maintainers',
     author_email='flame-github-owners@cisco.com',
     include_package_data=True,
@@ -36,8 +36,8 @@ setup(
         'boto3',
         'cloudpickle',
         'diskcache',
-        'mlflow',
+        'mlflow==2.0.1',
         'paho-mqtt',
-        'protobuf==3.19.4',
+        'protobuf==3.19.5',
     ],
 )
