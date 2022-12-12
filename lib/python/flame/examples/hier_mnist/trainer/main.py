@@ -65,27 +65,26 @@ class PyTorchMnistTrainer(Trainer):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
 
-        #self.model = Net().to(self.device)
-        self.model = torchvision.models.resnet50()
+        self.model = Net().to(self.device)
+        #self.model = torchvision.models.resnet50()
 
     def load_data(self) -> None:
-        """Load data."""
+        """Load a test dataset."""
         transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize((0.1307, ), (0.3081, ))
         ])
 
         dataset = datasets.MNIST('./data',
-                                 train=True,
+                                 train=False,
                                  download=True,
                                  transform=transform)
 
-        indices = torch.arange(2000)
-        dataset = data_utils.Subset(dataset, indices)
-        train_kwargs = {'batch_size': self.batch_size}
+        self.test_loader = torch.utils.data.DataLoader(dataset)
 
-        self.train_loader = torch.utils.data.DataLoader(
-            dataset, **train_kwargs)
+        # store data into dataset for analysis (e.g., bias)
+        self.dataset = Dataset(dataloader=self.test_loader)
+
 
     def train(self) -> None:
         """Train a model."""
