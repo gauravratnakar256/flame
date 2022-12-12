@@ -70,6 +70,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
         self.cm(self.config)
         self.cm.join_all()
 
+        # Create dict to track middle aggrgator shared memory  refrences
         self.shm_dict_list = {}
         self.task_id = self.config.task_id
 
@@ -96,6 +97,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             self._rounds = self.config.hyperparameters['rounds']
         self._work_done = False
 
+        # Create Memory Manager Object
         self.memory_manager = MemoryManager(task_id=self.task_id)
 
         self.framework = get_ml_framework_in_use()
@@ -105,6 +107,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 f"supported frameworks are: {valid_frameworks}")
 
     def create_model_structure(self):
+        # Create shared memory buffer for storing weights of  model 
         self.memory_manager.create_model_structure(self.model)
  
     def get(self, tag: str) -> None:
@@ -124,6 +127,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
                 logger.debug(f"No data from {end}; skipping it")
                 continue
             
+            # Add shared memory refrences of middle aggregator to dict
             if end not in self.shm_dict_list:
                 temp_dict = self.memory_manager.add_shm_refrence(end)
                 self.shm_dict_list[end] = temp_dict
@@ -131,7 +135,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
             logger.debug(f"received data from {end}")
             if MessageType.WEIGHTS in msg:
-                #logger.info(f"Received message from {end} is {msg[MessageType.WEIGHTS]}")
+                # Read Middle aggregator weights from shared memory
                 weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
 
             if MessageType.DATASET_SIZE in msg:
@@ -176,7 +180,9 @@ class TopAggregator(Role, metaclass=ABCMeta):
 
         # before distributing weights, update it from global model
         self._update_weights()
-        self.memory_manager.copy_weights_to_shared_memory(self.weights)
+
+        # Write top aggregator weights to shared memory
+        self.memory_manager.write_weights_to_shared_memory(self.weights)
 
         #Load Parameters to shared memory
         #self.memory_manager.load_parameters_to_shared_memory(self.model)
@@ -261,6 +267,7 @@ class TopAggregator(Role, metaclass=ABCMeta):
             self.weights = self.model.get_weights()
 
     def release_share_mem(self):
+        # Destroy shared memory object
        self.memory_manager.release_share_mem()
 
     def compose(self) -> None:

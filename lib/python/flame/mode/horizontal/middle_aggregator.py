@@ -63,6 +63,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.cm.join_all()
 
         self.task_id = self.config.task_id
+
+         # Create dict to track top aggregator shared memory refrences
         self.shm_dict_list = {}
 
         self.optimizer = optimizer_provider.get(self.config.optimizer.sort,
@@ -74,6 +76,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         self.cache = Cache()
         self.dataset_size = 0
 
+         # Create Memory Manager Object
         self.memory_manager = MemoryManager(task_id=self.task_id)
 
         self.framework = get_ml_framework_in_use()
@@ -83,6 +86,7 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
                 f"supported frameworks are: {valid_frameworks}")
         
     def create_model_structure(self):
+        # Create shared memory buffer for storing weights of  model 
         self.memory_manager.create_model_structure(self.model)
 
     def get(self, tag: str) -> None:
@@ -114,11 +118,13 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         end = channel.one_end()
         msg = channel.recv(end)
 
+        # Add shared memory refrence of top aggregator to dictionary
         if not end in self.shm_dict_list:
             temp_dict = self.memory_manager.add_shm_refrence(end)
             self.shm_dict_list[end] = temp_dict
 
         if MessageType.WEIGHTS in msg:
+            # Read top aggregator weights from shared memory
             self.weights = self.memory_manager.get_weights_from_shared_mem(self.shm_dict_list[end])
             
         if MessageType.EOT in msg:
@@ -195,7 +201,8 @@ class MiddleAggregator(Role, metaclass=ABCMeta):
         # one aggregator is sufficient
         end = channel.one_end()
 
-        self.memory_manager.copy_weights_to_shared_memory(self.weights)
+        # Write middle aggregator weights to shared memory
+        self.memory_manager.write_weights_to_shared_memory(self.weights)
 
         channel.send(
             end, {
