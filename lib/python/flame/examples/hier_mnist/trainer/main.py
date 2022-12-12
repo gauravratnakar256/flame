@@ -69,21 +69,23 @@ class PyTorchMnistTrainer(Trainer):
         #self.model = torchvision.models.resnet50()
 
     def load_data(self) -> None:
-        """Load a test dataset."""
+        """Load data."""
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.1307, ), (0.3081, ))
         ])
 
         dataset = datasets.MNIST('./data',
-                                 train=False,
+                                 train=True,
                                  download=True,
                                  transform=transform)
 
-        self.test_loader = torch.utils.data.DataLoader(dataset)
+        indices = torch.arange(2000)
+        dataset = data_utils.Subset(dataset, indices)
+        train_kwargs = {'batch_size': self.batch_size}
 
-        # store data into dataset for analysis (e.g., bias)
-        self.dataset = Dataset(dataloader=self.test_loader)
+        self.train_loader = torch.utils.data.DataLoader(
+            dataset, **train_kwargs)
 
 
     def train(self) -> None:
