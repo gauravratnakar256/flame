@@ -74,8 +74,8 @@ class PyTorchMnistMiddleAggregator(MiddleAggregator):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
 
-        #self.model = Net().to(self.device)
-        self.model = torchvision.models.resnet50()
+        self.model = Net().to(self.device)
+        #self.model = torchvision.models.resnet50()
 
     def load_data(self) -> None:
         """Load a test dataset."""
