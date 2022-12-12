@@ -47,26 +47,6 @@ class MemoryManager():
             self.__create_structure(module.named_parameters(recurse=False), layer_name)
             self.__create_structure(module.named_buffers(recurse=False), layer_name)
 
-    def load_parameters_to_shared_memory(self, model):
-        for layer_name, module in model.named_modules():
-            self.__load_parameters(module.named_parameters(recurse=False), layer_name, module, True)
-            self.__load_parameters(module.named_buffers(recurse=False), layer_name, module, False)
-
-    def __load_parameters(self, parameters, layer_name, module, is_parameter):
-        for name, param in parameters:
-            numpy_array = torch.clone(param).detach().numpy()
-            parameter_name = layer_name + "." + name
-            shared_mem_name = self.task_id + "." + layer_name + "." + name
-            dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
-                            buffer=self.shm_dict[shared_mem_name].buf)
-            np.copyto(dst, numpy_array)
-            setattr(module, name, None)
-
-            if is_parameter:
-                module.register_parameter(name, torch.nn.Parameter(torch.as_tensor(dst)))
-            else:
-                module.register_buffer(name, torch.as_tensor(dst))  
-
 
     def get_weights_from_shared_mem(self, end_shm_dict):
         weights_dict = OrderedDict()
@@ -97,15 +77,35 @@ class MemoryManager():
             src = torch.clone(weights[key]).detach().numpy()
             np.copyto(dst, src)
 
-    def get_weights_from_shared_mem_self(self):
-        weights_dict = OrderedDict()
-        for key in self.model_structure.keys():
-            shared_mem_name = self.task_id + "." + key
-            numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
-                                    buffer=self.shm_dict[shared_mem_name].buf)
-            weights_dict[key] = torch.from_numpy(numpy_array)
-        return weights_dict
+    # def get_weights_from_shared_mem_self(self):
+    #     weights_dict = OrderedDict()
+    #     for key in self.model_structure.keys():
+    #         shared_mem_name = self.task_id + "." + key
+    #         numpy_array = np.ndarray(self.model_structure[key]['shape'], dtype=self.model_structure[key]['dtype'],
+    #                                 buffer=self.shm_dict[shared_mem_name].buf)
+    #         weights_dict[key] = torch.from_numpy(numpy_array)
+    #     return weights_dict
 
+
+    # def load_parameters_to_shared_memory(self, model):
+    #     for layer_name, module in model.named_modules():
+    #         self.__load_parameters(module.named_parameters(recurse=False), layer_name, module, True)
+    #         self.__load_parameters(module.named_buffers(recurse=False), layer_name, module, False)
+
+    # def __load_parameters(self, parameters, layer_name, module, is_parameter):
+    #     for name, param in parameters:
+    #         numpy_array = torch.clone(param).detach().numpy()
+    #         parameter_name = layer_name + "." + name
+    #         shared_mem_name = self.task_id + "." + layer_name + "." + name
+    #         dst = np.ndarray(shape=self.model_structure[parameter_name]['shape'], dtype=self.model_structure[parameter_name]['dtype'],
+    #                         buffer=self.shm_dict[shared_mem_name].buf)
+    #         np.copyto(dst, numpy_array)
+    #         setattr(module, name, None)
+
+    #         if is_parameter:
+    #             module.register_parameter(name, torch.nn.Parameter(torch.as_tensor(dst)))
+    #         else:
+    #             module.register_buffer(name, torch.as_tensor(dst))  
 
 
     
