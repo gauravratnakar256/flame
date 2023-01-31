@@ -1,7 +1,7 @@
 # A guide to run python library locally without engaging with the system components
 
 ## Environment Setup
-We recommend setting up your environment with `conda`. This example is based on Ubuntu 22.04.
+We recommend setting up your environment with `conda`. This example is based on Ubuntu 20.04.
 ```bash
 conda create -n flame python=3.9
 conda activate flame
